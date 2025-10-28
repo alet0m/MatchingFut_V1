@@ -1,0 +1,37 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# The following line activates a set of recommended lints for Flutter apps,
+# packages, and plugins designed to encourage good coding practices.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # Puedes ajustar reglas aquí si lo necesitas
+    # avoid_print: false
+    # prefer_single_quotes: true
+
+analyzer:
+  # Excluir plataformas nativas para que no "ensucien" el análisis cuando no trabajamos Android/iOS
+  exclude:
+    - android/**
+    - ios/**
+    - macos/**
+    - windows/**
+    - linux/**
+    # Mantén solo lib/ en análisis para enfoque en código Dart
+    - test/**
+    - build/**
+    - .dart_tool/**
+
+  language:
+    strict-casts: false
+    strict-inference: false
+    strict-raw-types: false
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options

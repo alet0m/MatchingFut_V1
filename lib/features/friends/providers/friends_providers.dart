@@ -1,0 +1,59 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../data/friends_service.dart';
+import '../../../shared/models/user_model.dart';
+import '../../auth/data/auth_service.dart';
+
+// Provider del servicio de amigos
+final friendsServiceProvider = Provider<FriendsService>((ref) {
+  return FriendsService(Supabase.instance.client);
+});
+
+// Provider para la lista de amigos
+final friendsProvider = FutureProvider.autoDispose<List<UserModel>>((
+  ref,
+) async {
+  // Recalcular cuando cambie el estado de autenticación
+  ref.watch(authStateProvider);
+  final service = ref.read(friendsServiceProvider);
+  return service.getFriends();
+});
+
+// Provider para solicitudes de amistad pendientes
+final friendRequestsProvider = FutureProvider.autoDispose<List<UserModel>>((
+  ref,
+) async {
+  // Recalcular cuando cambie el estado de autenticación
+  ref.watch(authStateProvider);
+  final service = ref.read(friendsServiceProvider);
+  return service.getFriendRequests();
+});
+
+// Provider para búsqueda de usuarios
+final userSearchProvider = FutureProvider.autoDispose
+    .family<List<UserModel>, String>((ref, query) async {
+      if (query.trim().isEmpty) return [];
+      // Atar búsqueda a cambios de auth para evitar fugas de sesión
+      ref.watch(authStateProvider);
+      final service = ref.read(friendsServiceProvider);
+      return service.searchUsers(query);
+    });
+
+// Provider para verificar si existe amistad
+final friendshipStatusProvider = FutureProvider.autoDispose
+    .family<String?, String>((ref, userId) async {
+      ref.watch(authStateProvider);
+      final service = ref.read(friendsServiceProvider);
+      return service.getFriendshipStatus(userId);
+    });
+
+// Provider para estadísticas sociales
+final socialStatsProvider = FutureProvider.autoDispose<Map<String, int>>((
+  ref,
+) async {
+  ref.watch(authStateProvider);
+  final service = ref.read(friendsServiceProvider);
+  final friends = await service.getFriends();
+  final requests = await service.getFriendRequests();
+  return {'friends': friends.length, 'pendingRequests': requests.length};
+});

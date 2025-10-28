@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Fútbol App - Quilicura">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Fútbol App">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Fútbol App - Quilicura</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preload fonts to avoid fetch errors -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1e3a8a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .loading {
+      text-align: center;
+      color: white;
+    }
+    
+    .loading-spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading">
+    <div class="loading-spinner"></div>
+    <p>Cargando Fútbol App...</p>
+  </div>
+
+  <script>
+    // En debug, elimina service workers antiguos que pueden dejar pantalla en azul
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => {
+          regs.forEach((reg) => reg.unregister());
+          console.log('[SW] Unregistered existing service workers for debug');
+        });
+      }
+    }
+  </script>
+  <script src="flutter.js" defer></script>
+  <script>
+    // Bootstrap estándar de Flutter Web: carga el entrypoint y ejecuta la app.
+    // Nota: No usar window.flutterConfiguration simultáneamente para evitar conflicto.
+    window.addEventListener('load', function () {
+      const loader = window.flutterLoader || (window._flutter && window._flutter.loader);
+      if (!loader) {
+        console.error('No se encontró flutter loader.');
+        return;
+      }
+      loader.loadEntrypoint({}).then(function (engineInitializer) {
+        // Usa configuración por defecto del engine (o define renderer aquí si es necesario)
+        return engineInitializer.initializeEngine();
+      }).then(function (appRunner) {
+        return appRunner.runApp();
+      }).catch(function (e) {
+        console.error('Error inicializando Flutter:', e);
+      });
+    });
+  </script>
+</body>
+</html>
