@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/notifications/presentation/providers/notifications_providers.dart';
 
 class MainScaffold extends StatelessWidget {
   final Widget child;
@@ -24,6 +26,8 @@ class MainScaffold extends StatelessWidget {
       title = 'Partidos';
     } else if (currentLocation.startsWith('/teams')) {
       title = 'Equipos';
+    } else if (currentLocation.startsWith('/notifications')) {
+      title = 'Notificaciones';
     } else if (currentLocation.startsWith('/maps')) {
       title = 'Territorio';
     } else if (currentLocation.startsWith('/profile')) {
@@ -56,6 +60,15 @@ class MainScaffold extends StatelessWidget {
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
       ),
+      actions: [
+        // Bell with badge
+        Builder(
+          builder: (context) {
+            return _NotificationsBell();
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
@@ -150,6 +163,30 @@ class MainScaffold extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('/friends');
+              },
+            ),
+
+            // Notificaciones
+            ListTile(
+              leading: const Icon(
+                Icons.notifications,
+                color: Colors.white,
+                size: 28,
+              ),
+              title: const Text(
+                'Notificaciones',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: const Text(
+                'Invitaciones y alertas',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/notifications');
               },
             ),
 
@@ -344,5 +381,60 @@ class MainScaffold extends StatelessWidget {
         context.go('/profile');
         break;
     }
+  }
+}
+
+// Bell icon with badge; separated widget to use Consumer without converting MainScaffold into ConsumerWidget
+class _NotificationsBell extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final countAsync = ref.watch(
+          // ignore: deprecated_member_use
+          // The provider is under notifications feature
+          // Import locally to avoid circular imports via top of file
+          // We refer using fully qualified import below in a local builder
+          notificationsBadgeCountProvider,
+        );
+        final count = countAsync.asData?.value ?? 0;
+        return InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () => context.push('/notifications'),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12.0),
+                child: Icon(Icons.notifications, color: Colors.white, size: 26),
+              ),
+              if (count > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6F00),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      count > 99 ? '99+' : '$count',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

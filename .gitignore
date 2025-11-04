@@ -43,3 +43,22 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Node / React Native
+node_modules/
+react-native-team-chat/node_modules/
+react-native-team-chat/.expo/
+react-native-team-chat/dist/
+
+# OS files
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# iOS/Android extras
+ios/Pods/
+android/.gradle/
+android/app/build/

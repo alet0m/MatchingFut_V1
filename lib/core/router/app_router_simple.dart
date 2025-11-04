@@ -17,6 +17,7 @@ import '../../features/matches/presentation/pages/radial_match_search_page.dart'
 import '../../features/matches/presentation/pages/create_public_match_page.dart';
 import '../../features/matches/presentation/pages/create_match_page_enhanced.dart';
 import '../../features/teams/presentation/pages/teams_page.dart';
+import '../../features/teams/presentation/pages/team_chat_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/maps/presentation/pages/maps_page.dart';
 import '../../features/maps/presentation/pages/territorial_map_page.dart';
@@ -32,6 +33,7 @@ import '../../features/recruitment/presentation/pages/create_recruitment_post_pa
 import '../../shared/widgets/main_scaffold.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../debug/health_page.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 
 // Refresca el router cuando cambia el estado de autenticación (web necesita esto)
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -166,6 +168,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/teams',
             builder: (context, state) => const TeamsPage(),
+            routes: [
+              GoRoute(
+                path: ':teamId/chat',
+                builder: (context, state) {
+                  final teamId = state.pathParameters['teamId']!;
+                  return TeamChatPage(teamId: teamId);
+                },
+              ),
+            ],
+          ),
+
+          // Notificaciones
+          GoRoute(
+            path: '/notifications',
+            builder: (context, state) => const NotificationsPage(),
           ),
 
           // Perfil

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/models/team_model.dart';
 import '../../../core/config/supabase_config.dart';
+import '../../auth/data/auth_service.dart';
 
 class TeamsService {
   final SupabaseClient _supabase;
@@ -11,32 +12,19 @@ class TeamsService {
   // Helper method para mapear respuestas de la base de datos
   Map<String, dynamic> _mapTeamFromDatabase(Map<String, dynamic> dbTeam) {
     return {
-      'id': dbTeam['id'],
-      'name': dbTeam['name'],
-      'tag': dbTeam['tag'],
-      'captainId': dbTeam['captain_id'],
-      'comunaId': dbTeam['comuna_id'], // ✅ Coincidir con base de datos
-      'modalityId': dbTeam['modality_id'],
-      'isActive': dbTeam['is_active'] ?? true,
-      'maxMembers': dbTeam['max_members'] ?? 15,
-      'homeColor': dbTeam['home_color'] ?? '#2E7D32',
-      'awayColor': dbTeam['away_color'] ?? '#FFFFFF',
-      'eloRating':
-          dbTeam['elo_rating'] ?? 1200, // ✅ Coincidir con base de datos
+      'id': dbTeam['id']?.toString() ?? '',
+      'name': (dbTeam['name'] ?? '').toString(),
+      'tag': dbTeam['tag']?.toString(),
+      'captainId': dbTeam['captain_id']?.toString(),
+      'comunaId': dbTeam['comuna_id']?.toString(),
+      // TeamModel.modality tiene default, omitimos conversión desde modality_id
+      'eloRating': dbTeam['elo_rating'] ?? 1200,
       'totalMatches': dbTeam['total_matches'] ?? 0,
       'wins': dbTeam['wins'] ?? 0,
       'losses': dbTeam['losses'] ?? 0,
       'draws': dbTeam['draws'] ?? 0,
-      'logoUrl': dbTeam['logo_url'],
-      'description': dbTeam['description'],
-      'createdAt':
-          dbTeam['created_at'] != null
-              ? DateTime.parse(dbTeam['created_at'] as String).toIso8601String()
-              : DateTime.now().toIso8601String(),
-      'updatedAt':
-          dbTeam['updated_at'] != null
-              ? DateTime.parse(dbTeam['updated_at'] as String).toIso8601String()
-              : DateTime.now().toIso8601String(),
+      // Campos no presentes en TeamModel se omiten
+      'createdAt': dbTeam['created_at']?.toString(),
     };
   }
 
@@ -50,6 +38,8 @@ class TeamsService {
     String? tag,
     String? description,
     String? logoUrl,
+    String? homeColor,
+    String? awayColor,
   }) async {
     try {
       // Verificar que el usuario esté autenticado
@@ -146,8 +136,14 @@ class TeamsService {
         'draws': 0,
         'is_active': true,
         'max_members': 15,
-        'home_color': '#2E7D32',
-        'away_color': '#FFFFFF',
+        'home_color':
+            (homeColor == null || homeColor.isEmpty)
+                ? '#2E7D32'
+                : (homeColor.startsWith('#') ? homeColor : '#$homeColor'),
+        'away_color':
+            (awayColor == null || awayColor.isEmpty)
+                ? '#FFFFFF'
+                : (awayColor.startsWith('#') ? awayColor : '#$awayColor'),
       };
 
       // Solo agregar comuna_id si existe
@@ -196,11 +192,12 @@ class TeamsService {
 
   // Obtener equipos por sector
   Future<List<TeamModel>> getTeamsBySector(String sectorId) async {
+    // Nota: la tabla teams no tiene sector_id ni average_elo en el esquema base.
+    // Se deja método como placeholder para futuro (filtrar por comuna/sector si aplica).
     final response = await _supabase
         .from('teams')
         .select()
-        .eq('sector_id', sectorId)
-        .order('average_elo', ascending: false);
+        .order('elo_rating', ascending: false);
 
     return response
         .map<TeamModel>(
@@ -216,10 +213,10 @@ class TeamsService {
         .select('''
           *,
           team_members!inner (
-            user_id
+            player_id
           )
         ''')
-        .eq('team_members.user_id', userId)
+        .eq('team_members.player_id', userId)
         .eq('team_members.is_active', true);
 
     return response
@@ -293,7 +290,7 @@ class TeamsService {
 
     final updatedData = {
       'total_matches': (current['total_matches'] as int) + 1,
-      'average_elo': newElo,
+      'elo_rating': newElo,
     };
 
     if (won) {
@@ -313,7 +310,7 @@ class TeamsService {
         .from('teams')
         .select()
         .ilike('name', '%$query%')
-        .order('average_elo', ascending: false);
+        .order('elo_rating', ascending: false);
 
     return response.map<TeamModel>((json) => TeamModel.fromJson(json)).toList();
   }
@@ -323,7 +320,7 @@ class TeamsService {
     final response = await _supabase
         .from('teams')
         .select()
-        .order('average_elo', ascending: false)
+        .order('elo_rating', ascending: false)
         .limit(limit);
 
     return response.map<TeamModel>((json) => TeamModel.fromJson(json)).toList();
@@ -338,7 +335,7 @@ class TeamsService {
         .from('team_members')
         .update({'is_active': false})
         .eq('team_id', teamId)
-        .eq('user_id', userId);
+        .eq('player_id', userId);
   }
 
   // Transferir capitanía
@@ -447,7 +444,11 @@ final teamsServiceProvider = Provider<TeamsService>((ref) {
 
 // Provider para obtener equipos del usuario actual
 final userTeamsProvider = FutureProvider<List<TeamModel>>((ref) async {
-  final user = Supabase.instance.client.auth.currentUser;
+  // Escuchar cambios de autenticación para refrescar automáticamente al cambiar de cuenta
+  ref.watch(authStateProvider);
+
+  final supabase = ref.watch(supabaseProvider);
+  final user = supabase.auth.currentUser;
   if (user == null) return [];
 
   final teamsService = ref.watch(teamsServiceProvider);

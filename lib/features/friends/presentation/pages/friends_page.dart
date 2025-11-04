@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/friends_providers.dart';
 import '../../providers/friends_notifications_provider.dart';
+import '../widgets/search_friends_body.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 
@@ -322,28 +323,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
   }
 
   Widget _buildSearchTab() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search, size: 80, color: Colors.grey),
-          SizedBox(height: 16),
-          Text(
-            'Buscar nuevos amigos',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Ve a la pestaña de búsqueda o usa el botón +',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    );
+    return const SearchFriendsBody();
   }
 
   Future<void> _handleFriendRequest(String requestId, bool accept) async {

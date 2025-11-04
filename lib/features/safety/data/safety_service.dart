@@ -63,8 +63,9 @@ class SafetyService {
   }) async {
     final uid = _supabase.auth.currentUser?.id;
     if (uid == null) throw Exception('Usuario no autenticado');
-    if (uid == reportedUserId)
+    if (uid == reportedUserId) {
       throw Exception('No puedes reportarte a ti mismo');
+    }
 
     await _supabase.from('user_reports').insert({
       'reporter_id': uid,

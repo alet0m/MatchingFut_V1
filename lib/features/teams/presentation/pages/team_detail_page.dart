@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'manage_players_page.dart';
+import 'package:go_router/go_router.dart';
 import '../../../teams/data/players_service.dart';
+import '../../../../core/config/supabase_config.dart';
 
 class TeamDetailPage extends ConsumerWidget {
   final dynamic
@@ -11,7 +13,25 @@ class TeamDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    int readElo(dynamic t) {
+      // Soporta TeamModel.eloRating y legados con averageElo
+      try {
+        final v = t.eloRating;
+        if (v is int) return v;
+        if (v is num) return v.toInt();
+      } catch (_) {}
+      try {
+        final v = t.averageElo;
+        if (v is int) return v;
+        if (v is num) return v.toInt();
+      } catch (_) {}
+      return 1200;
+    }
+
     final playersCountAsync = ref.watch(teamPlayersCountProvider(team.id));
+    final currentUser = ref.read(supabaseProvider).auth.currentUser;
+    final bool isCaptain =
+        currentUser?.id == (team.captainId ?? team.captain_id);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -26,17 +46,27 @@ class TeamDetailPage extends ConsumerWidget {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          // Botón de Chat siempre visible
           IconButton(
-            icon: const Icon(Icons.group_add, color: Colors.white),
+            tooltip: 'Chat del equipo',
+            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ManagePlayersPage(team: team),
-                ),
-              );
+              // Navega al chat del equipo usando GoRouter
+              context.push('/teams/${team.id}/chat');
             },
           ),
+          if (isCaptain)
+            IconButton(
+              icon: const Icon(Icons.group_add, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ManagePlayersPage(team: team),
+                  ),
+                );
+              },
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -83,8 +113,31 @@ class TeamDetailPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'ELO: ${team.averageElo ?? 1200}',
+                    'ELO: ${readElo(team)}',
                     style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+                  // Botón CTA destacado para Chat
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.push('/teams/${team.id}/chat');
+                      },
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      label: const Text('Abrir chat del equipo'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -210,36 +263,37 @@ class TeamDetailPage extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
 
-                            // Botón para gestionar jugadores
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            ManagePlayersPage(team: team),
+                            // Botón para gestionar jugadores (solo capitán)
+                            if (isCaptain)
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              ManagePlayersPage(team: team),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.group_add),
+                                label: Text(
+                                  count == 0
+                                      ? 'Agregar Jugadores'
+                                      : 'Gestionar Jugadores',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2E7D32),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
                                   ),
-                                );
-                              },
-                              icon: const Icon(Icons.group_add),
-                              label: Text(
-                                count == 0
-                                    ? 'Agregar Jugadores'
-                                    : 'Gestionar Jugadores',
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E7D32),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                     loading: () => const CircularProgressIndicator(),

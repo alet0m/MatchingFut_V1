@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import '../../data/teams_service.dart';
 import '../../../../shared/models/team_model.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
-import 'create_team_page.dart';
+import 'create_team_page_new.dart';
 import 'team_detail_page.dart';
 import 'teams_search_page.dart';
 import '../../../../core/config/supabase_config.dart';
+import '../../../notifications/presentation/providers/notifications_providers.dart';
 
 class TeamsPage extends ConsumerWidget {
   const TeamsPage({super.key});
@@ -71,7 +73,7 @@ class TeamsPage extends ConsumerWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const CreateTeamPage(),
+                              builder: (context) => const CreateTeamPageNew(),
                             ),
                           );
                         },
@@ -166,6 +168,8 @@ class TeamsPage extends ConsumerWidget {
         // Obtener el usuario actual para verificar si es capitán
         final currentUser = ref.read(supabaseProvider).auth.currentUser;
         final isCaptain = currentUser?.id == team.captainId;
+        final unreadMapAsync = ref.watch(unreadChatByTeamProvider);
+        final unread = unreadMapAsync.asData?.value[team.id] ?? 0;
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -204,6 +208,25 @@ class TeamsPage extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (unread > 0)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6F00),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      unread > 99 ? '99+' : '$unread',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 if (isCaptain)
                   Container(
                     margin: const EdgeInsets.only(left: 8),
@@ -253,6 +276,52 @@ class TeamsPage extends ConsumerWidget {
                     _buildStatChip('${team.draws}E', Colors.orange),
                     const SizedBox(width: 4),
                     _buildStatChip('${team.losses}P', Colors.red),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton.icon(
+                      onPressed: () {
+                        // Navegar al chat del equipo
+                        context.push('/teams/${team.id}/chat');
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF2E7D32),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline),
+                      label: Row(
+                        children: [
+                          const Text('Chat'),
+                          if (unread > 0) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6F00),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                unread > 99 ? '99+' : '$unread',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -346,7 +415,7 @@ class TeamsPage extends ConsumerWidget {
         onCreateTeam: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const CreateTeamPage()),
+            MaterialPageRoute(builder: (context) => const CreateTeamPageNew()),
           );
         },
       );
@@ -381,7 +450,7 @@ class TeamsPage extends ConsumerWidget {
       context,
       MaterialPageRoute(
         builder:
-            (context) => const CreateTeamPage(), // TODO: Crear EditTeamPage
+            (context) => const CreateTeamPageNew(), // TODO: Crear EditTeamPage
       ),
     );
 

@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../widgets/responsive_panel.dart';
+import '../../data/maps_repository.dart';
+import '../../../../core/config/supabase_config.dart';
+import '../../../../shared/widgets/comuna_selector_widget.dart';
 
-class MapsPage extends StatelessWidget {
+class MapsPage extends ConsumerStatefulWidget {
   const MapsPage({super.key});
 
   @override
+  ConsumerState<MapsPage> createState() => _MapsPageState();
+}
+
+class _MapsPageState extends ConsumerState<MapsPage> {
+  String? _selectedComunaId;
+  String? _selectedComunaName;
+  String _selectedRegionName = '';
+
+  void _onComunaSelected(String comunaId, String comunaName) {
+    setState(() {
+      _selectedComunaId = comunaId;
+      _selectedComunaName = comunaName;
+      // Región: opcional por ahora (repo mock no la usa). Mantener string no-nulo.
+      _selectedRegionName = _selectedRegionName;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Repositorio real con Supabase, sin datos falsos
+    final repo = MapsRepositoryReal(ref.watch(supabaseProvider));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sistema Territorial'),
+        title: const Text('Comunas y Ranking'),
         backgroundColor: const Color(0xFF2E7D32),
         foregroundColor: Colors.white,
       ),
@@ -18,108 +43,36 @@ class MapsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Tarjeta de introducción
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '¡Bienvenido al Sistema Territorial!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1B5E20),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Domina los sectores de tu comuna, defiende tu territorio y aumenta tu ELO ganando partidos estratégicamente.',
-                        style: TextStyle(fontSize: 14, color: Colors.black87),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => context.push('/territorial-map'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E7D32),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                              ),
-                              child: const Text('Ver Mapa Territorial'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 24),
+              // Nuevo: Panel responsivo de Canchas y Ranking controlado por Región/Comuna
               const Text(
-                'Explora el Sistema Territorial',
+                'Canchas y Ranking (Global / Comuna)',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 16),
-
-              // Tarjetas de acciones principales
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  // Mapa Territorial
-                  _buildFeatureCard(
-                    context,
-                    title: 'Mapa Territorial',
-                    description: 'Visualiza y controla sectores',
-                    icon: Icons.map,
-                    color: const Color(0xFF2E7D32),
-                    onTap: () => context.push('/territorial-map'),
-                  ),
-
-                  // Rankings
-                  _buildFeatureCard(
-                    context,
-                    title: 'Rankings ELO',
-                    description: 'Clasificación de equipos',
-                    icon: Icons.leaderboard,
-                    color: const Color(0xFFFF6F00),
-                    onTap: () => context.push('/rankings'),
-                  ),
-
-                  // Desafíos
-                  _buildFeatureCard(
-                    context,
-                    title: 'Desafíos',
-                    description: 'Compite por territorios',
-                    icon: Icons.sports_kabaddi,
-                    color: const Color(0xFF1B5E20),
-                    onTap: () => context.push('/challenges'),
-                  ),
-
-                  // Crear Desafío
-                  _buildFeatureCard(
-                    context,
-                    title: 'Crear Desafío',
-                    description: 'Lanza un nuevo desafío',
-                    icon: Icons.add_location_alt,
-                    color: const Color(0xFFFF6F00),
-                    onTap: () => context.push('/challenges/create'),
-                  ),
-                ],
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FA),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Selector de comuna (incluye selector de región dentro)
+                    ComunaSelector(
+                      initialComunaId: _selectedComunaId,
+                      onComunaSelected: _onComunaSelected,
+                    ),
+                    const SizedBox(height: 16),
+                    ResponsivePanel(
+                      region: _selectedRegionName,
+                      comuna: _selectedComunaName ?? '', // vacío => Global
+                      repo: repo,
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -157,6 +110,46 @@ class MapsPage extends StatelessWidget {
                 title: 'Sube en el Ranking',
                 description:
                     'Incrementa tu ELO y aumenta tu reputación en la comunidad.',
+              ),
+
+              const SizedBox(height: 24),
+              const Text(
+                'Explora la App',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _buildFeatureCard(
+                    context,
+                    title: 'Rankings ELO',
+                    description: 'Clasificación de equipos',
+                    icon: Icons.leaderboard,
+                    color: const Color(0xFFFF6F00),
+                    onTap: () => context.push('/rankings'),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Desafíos',
+                    description: 'Compite por territorios',
+                    icon: Icons.sports_kabaddi,
+                    color: const Color(0xFF1B5E20),
+                    onTap: () => context.push('/challenges'),
+                  ),
+                  _buildFeatureCard(
+                    context,
+                    title: 'Crear Desafío',
+                    description: 'Lanza un nuevo desafío',
+                    icon: Icons.add_location_alt,
+                    color: const Color(0xFFFF6F00),
+                    onTap: () => context.push('/challenges/create'),
+                  ),
+                ],
               ),
             ],
           ),

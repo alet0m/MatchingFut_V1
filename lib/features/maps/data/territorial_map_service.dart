@@ -68,18 +68,23 @@ class TerritorialMapService {
             geo = geoDyn;
           }
 
-          final String teamId = (sector['current_champion_id']?.toString() ?? '');
+          final String teamId =
+              (sector['current_champion_id']?.toString() ?? '');
 
           // Definir color del polígono según si tiene equipo controlador
-          final Color fillColor = teamId.isNotEmpty
-              ? const Color(0x662E7D32) // Verde con transparencia
-              : const Color(0x66FF6F00); // Naranja con transparencia
+          final Color fillColor =
+              teamId.isNotEmpty
+                  ? const Color(0x662E7D32) // Verde con transparencia
+                  : const Color(0x66FF6F00); // Naranja con transparencia
 
-          final Color strokeColor = teamId.isNotEmpty
-              ? const Color(0xFF2E7D32)
-              : const Color(0xFFFF6F00);
+          final Color strokeColor =
+              teamId.isNotEmpty
+                  ? const Color(0xFF2E7D32)
+                  : const Color(0xFFFF6F00);
 
-          if (geo != null && geo['type'] != null && geo['coordinates'] != null) {
+          if (geo != null &&
+              geo['type'] != null &&
+              geo['coordinates'] != null) {
             final type = geo['type']?.toString();
             final coords = geo['coordinates'];
 
@@ -195,9 +200,10 @@ class TerritorialMapService {
             continue;
           }
           final createdAtStr = row['created_at']?.toString();
-          final createdAt = createdAtStr != null
-              ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
-              : DateTime.now();
+          final createdAt =
+              createdAtStr != null
+                  ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
+                  : DateTime.now();
 
           result.add(
             SectorModel(

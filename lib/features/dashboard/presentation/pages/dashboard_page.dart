@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+// import '../../../notifications/presentation/providers/notifications_providers.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class DashboardPage extends ConsumerStatefulWidget {
   const DashboardPage({super.key});
@@ -133,15 +134,8 @@ class _HomePage extends StatelessWidget {
             ),
           ],
         ),
-        Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: Color(0xFF2E7D32),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.notifications, color: Colors.white, size: 24),
-        ),
+        // La campanita fija está en el AppBar global del MainScaffold
+        const SizedBox.shrink(),
       ],
     );
   }

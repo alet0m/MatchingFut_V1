@@ -20,17 +20,16 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
     with SingleTickerProviderStateMixin {
   String? _selectedComunaId;
   String? _selectedComunaName;
-  late TabController _tabController;
+  late TabController _tabController; // 2 tabs: Global / Comuna
   bool _isLoading = false;
   List<TeamModel> _globalRankings = [];
   List<TeamModel> _comunaRankings = [];
-  List<TeamModel> _sectorControllers = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _loadDefaultComuna();
+    _tabController = TabController(length: 2, vsync: this);
+    _initFromQueryOrDefault();
   }
 
   @override
@@ -39,26 +38,45 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
     super.dispose();
   }
 
-  Future<void> _loadDefaultComuna() async {
+  Future<void> _initFromQueryOrDefault() async {
     try {
       setState(() => _isLoading = true);
       final locationService = ref.read(locationServiceProvider);
-      final comunas = await locationService.getActiveComunas();
+      final qp = Uri.base.queryParameters;
+      final comunaQuery = (qp['comuna'] ?? '').trim();
+      final comunaIdQuery = (qp['comunaId'] ?? '').trim();
 
-      if (comunas.isNotEmpty) {
-        // Usar Quilicura si existe, si no la primera activa
-        final defaultComuna = comunas.firstWhere(
-          (c) => c.name.toLowerCase() == 'quilicura',
-          orElse: () => comunas.first,
+      if (comunaIdQuery.isNotEmpty) {
+        final comunas = await locationService.getActiveComunas();
+        final found = comunas.firstWhere(
+          (c) => c.id == comunaIdQuery,
+          orElse:
+              () => comunas.isNotEmpty ? comunas.first : throw 'Sin comunas',
         );
-
-        setState(() {
+        _selectedComunaId = found.id;
+        _selectedComunaName = found.name;
+      } else if (comunaQuery.isNotEmpty) {
+        final comunas = await locationService.getActiveComunas();
+        final found = comunas.firstWhere(
+          (c) => c.name.toLowerCase() == comunaQuery.toLowerCase(),
+          orElse:
+              () => comunas.isNotEmpty ? comunas.first : throw 'Sin comunas',
+        );
+        _selectedComunaId = found.id;
+        _selectedComunaName = found.name;
+      } else {
+        final comunas = await locationService.getActiveComunas();
+        if (comunas.isNotEmpty) {
+          final defaultComuna = comunas.firstWhere(
+            (c) => c.name.toLowerCase() == 'quilicura',
+            orElse: () => comunas.first,
+          );
           _selectedComunaId = defaultComuna.id;
           _selectedComunaName = defaultComuna.name;
-        });
-
-        await _loadRankings();
+        }
       }
+
+      await _loadRankings();
     } catch (e) {
       debugPrint('Error cargando comuna por defecto: $e');
     } finally {
@@ -82,15 +100,9 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
         _selectedComunaId!,
       );
 
-      // Cargar equipos con control de sectores
-      final sectorControllers = await rankingService.getSectorControllers(
-        _selectedComunaId!,
-      );
-
       setState(() {
         _globalRankings = globalRankings;
         _comunaRankings = comunaRankings;
-        _sectorControllers = sectorControllers;
       });
     } catch (e) {
       debugPrint('Error cargando rankings: $e');
@@ -125,11 +137,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Global'),
-            Tab(text: 'Comuna'),
-            Tab(text: 'Sectores'),
-          ],
+          tabs: const [Tab(text: 'Global'), Tab(text: 'Comuna')],
         ),
       ),
       body: Column(
@@ -152,14 +160,8 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
                     : TabBarView(
                       controller: _tabController,
                       children: [
-                        // Tab 1: Ranking Global
                         _buildRankingList(_globalRankings, 'global'),
-
-                        // Tab 2: Ranking por Comuna
                         _buildRankingList(_comunaRankings, 'comuna'),
-
-                        // Tab 3: Equipos con control de sectores
-                        _buildSectorControllersList(),
                       ],
                     ),
           ),
@@ -244,65 +246,5 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
     );
   }
 
-  Widget _buildSectorControllersList() {
-    if (_sectorControllers.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.map_outlined, size: 48, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No hay sectores controlados todavía',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: _sectorControllers.length,
-      itemBuilder: (context, index) {
-        final team = _sectorControllers[index];
-
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Color(0xFFFF6F00),
-              child: Icon(Icons.location_on, color: Colors.white),
-            ),
-            title: Text(team.name),
-            subtitle: Text(
-              // Usamos wins + draws como aproximación de sectores controlados
-              'Sectores controlados: ${team.wins + team.draws}',
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'ELO: ${team.eloRating}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  // Usamos días temporales basados en partidos
-                  'Días: ${team.totalMatches * 5}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-            onTap: () {
-              // Navegar al mapa con filtro para este equipo
-              // context.push('/map?teamId=${team.id}');
-            },
-          ),
-        );
-      },
-    );
-  }
+  // Sección de "Sectores" eliminada: ya no usamos sectores en la app
 }

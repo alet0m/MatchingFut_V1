@@ -48,6 +48,20 @@ class FutbolApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
+      // Keep app adaptive; we could also clamp text scaling if layout requires
+      builder: (context, child) {
+        // Optional: Slightly limit extreme system text scale on small devices to reduce overflows.
+        // We respect user settings but keep reasonable bounds for mobile layouts.
+        final mq = MediaQuery.of(context);
+        final textScaler = mq.textScaler.clamp(
+          minScaleFactor: 0.9,
+          maxScaleFactor: 1.2,
+        );
+        return MediaQuery(
+          data: mq.copyWith(textScaler: textScaler),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routerConfig: router,
     );
   }

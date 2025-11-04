@@ -16,6 +16,7 @@ import '../../features/maps/presentation/pages/rankings_page.dart';
 import '../../features/maps/presentation/pages/challenges_page.dart';
 import '../../features/maps/presentation/pages/create_challenge_page.dart';
 import '../../features/teams/presentation/pages/teams_page.dart';
+import '../../features/teams/presentation/pages/team_chat_page.dart';
 import '../../features/challenges/presentation/pages/search_teams_page.dart';
 import '../../features/challenges/presentation/pages/challenges_page.dart'
     as team_challenges;
@@ -28,6 +29,7 @@ import '../../features/matches/presentation/pages/create_match_page_enhanced.dar
 import '../../features/recruitment/presentation/pages/recruitment_page.dart';
 import '../../features/recruitment/presentation/pages/create_recruitment_post_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -225,6 +227,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/teams',
             name: 'teams',
             builder: (context, state) => const TeamsPage(),
+            routes: [
+              GoRoute(
+                path: ':teamId/chat',
+                name: 'team-chat',
+                builder: (context, state) {
+                  final teamId = state.pathParameters['teamId']!;
+                  return TeamChatPage(teamId: teamId);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/notifications',
+            name: 'notifications',
+            builder: (context, state) => const NotificationsPage(),
           ),
           GoRoute(
             path: '/matches',
@@ -240,7 +257,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: ':matchId',
                 name: 'match-details',
                 builder: (context, state) {
-                  final matchId = state.pathParameters['matchId']!;
                   return const Text('Detalles del partido - Pendiente');
                 },
               ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/app.dart';
 import 'core/config/supabase_config.dart';
+// Push notifications removed: using only Supabase Realtime in-app alerts
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +29,7 @@ void main() async {
     );
 
     debugPrint('✅ Supabase inicializado correctamente');
+
     debugPrint('🎯 Iniciando aplicación Flutter...');
 
     runApp(const ProviderScope(child: FutbolApp()));
