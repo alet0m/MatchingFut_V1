@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/teams_service.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class CreateTeamPage extends ConsumerStatefulWidget {
   const CreateTeamPage({super.key});
@@ -65,22 +66,12 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
         ref.invalidate(userTeamsProvider);
         ref.invalidate(topTeamsProvider);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Equipo creado exitosamente!'),
-            backgroundColor: Color(0xFF2E7D32),
-          ),
-        );
+        AppSnack.success(context, '¡Equipo creado exitosamente!');
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al crear equipo: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnack.error(context, 'Error al crear equipo: $e');
       }
     } finally {
       if (mounted) {
@@ -94,14 +85,19 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
-        title: const Text(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        title: Text(
           'Crear Equipo',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -115,7 +111,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -131,22 +127,24 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32).withOpacity(0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.group_add,
                         size: 40,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Crear un Nuevo Equipo',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -165,7 +163,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -178,12 +176,12 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Nombre del Equipo',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -201,13 +199,13 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF2E7D32),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.sports_soccer,
-                          color: Color(0xFF2E7D32),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                       validator: (value) {
@@ -227,12 +225,12 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                     const SizedBox(height: 24),
 
                     // Campo Tag
-                    const Text(
+                    Text(
                       'Tag del Equipo *',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -247,8 +245,8 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                         hintText:
                             'Ej: tigresfc, losleones, fuerzaquilicura (obligatorio)',
                         prefixText: '#',
-                        prefixStyle: const TextStyle(
-                          color: Color(0xFFFF6F00),
+                        prefixStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
                           fontWeight: FontWeight.bold,
                         ),
                         border: OutlineInputBorder(
@@ -261,13 +259,13 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(
-                            color: Color(0xFF2E7D32),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           Icons.tag,
-                          color: Color(0xFFFF6F00),
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       validator: (value) {
@@ -308,12 +306,12 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                     const SizedBox(height: 24),
 
                     // Selector de Comuna
-                    const Text(
+                    Text(
                       'Comuna',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -329,9 +327,9 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                           value: _selectedComuna,
                           hint: const Text('Selecciona tu comuna'),
                           isExpanded: true,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.location_on,
-                            color: Color(0xFF2E7D32),
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           items:
                               _comunas.map<DropdownMenuItem<String>>((comuna) {
@@ -397,23 +395,25 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32).withOpacity(0.1),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: Color(0xFF2E7D32),
+                            color: Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Por ahora solo está disponible Quilicura. '
                               'Pronto habilitaremos más comunas.',
                               style: TextStyle(
-                                color: Color(0xFF2E7D32),
+                                color: Theme.of(context).colorScheme.primary,
                                 fontSize: 12,
                               ),
                             ),
@@ -428,19 +428,23 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32).withOpacity(0.05),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF2E7D32).withOpacity(0.2),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.2),
                         ),
                       ),
                       child: Column(
                         children: [
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.info_outline,
-                                color: Color(0xFF2E7D32),
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
@@ -459,9 +463,9 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.people_outline,
-                                color: Color(0xFF2E7D32),
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 20,
                               ),
                               const SizedBox(width: 8),
@@ -491,8 +495,8 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createTeam,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),

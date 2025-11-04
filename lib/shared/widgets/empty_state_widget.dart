@@ -21,7 +21,7 @@ class EmptyStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = color ?? const Color(0xFF2E7D32);
+    final primaryColor = color ?? Theme.of(context).colorScheme.primary;
 
     return Center(
       child: Padding(
@@ -79,7 +79,7 @@ class EmptyStateWidget extends StatelessWidget {
                     onPressed: onAction,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
                         vertical: 16,

@@ -7,13 +7,17 @@ class MainScaffoldSimple extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Futbol App',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: scheme.onPrimary,
+          ),
         ),
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: scheme.primary,
         elevation: 0,
         centerTitle: true,
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../shared/models/team_model.dart';
 import '../../../core/config/supabase_config.dart';
@@ -442,17 +443,76 @@ final teamsServiceProvider = Provider<TeamsService>((ref) {
   return TeamsService(supabase);
 });
 
-// Provider para obtener equipos del usuario actual
-final userTeamsProvider = FutureProvider<List<TeamModel>>((ref) async {
-  // Escuchar cambios de autenticación para refrescar automáticamente al cambiar de cuenta
+// Provider para obtener equipos del usuario actual (stream en vivo con debounce)
+final userTeamsProvider = StreamProvider<List<TeamModel>>((ref) async* {
+  // Recalcular cuando cambie el estado de autenticación
   ref.watch(authStateProvider);
 
   final supabase = ref.watch(supabaseProvider);
   final user = supabase.auth.currentUser;
-  if (user == null) return [];
+  if (user == null) {
+    yield <TeamModel>[];
+    return;
+  }
 
   final teamsService = ref.watch(teamsServiceProvider);
-  return teamsService.getUserTeams(user.id);
+
+  Future<List<TeamModel>> fetch() => teamsService.getUserTeams(user.id);
+
+  final controller = StreamController<List<TeamModel>>.broadcast();
+  List<TeamModel>? lastEmitted;
+  bool computing = false;
+  Timer? debounce;
+
+  void scheduleEmit() {
+    debounce?.cancel();
+    debounce = Timer(const Duration(milliseconds: 200), () async {
+      if (computing) return;
+      computing = true;
+      try {
+        final value = await fetch();
+        if (lastEmitted?.length != value.length || (lastEmitted == null)) {
+          lastEmitted = value;
+          controller.add(value);
+        }
+      } finally {
+        computing = false;
+      }
+    });
+  }
+
+  // Emisión inicial
+  scheduleEmit();
+
+  // Realtime: cambios en membresía del usuario y cambios básicos en teams
+  final ch =
+      supabase.channel('realtime:user_teams:${user.id}')
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'team_members',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'player_id',
+            value: user.id,
+          ),
+          callback: (_) => scheduleEmit(),
+        )
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'teams',
+          callback: (_) => scheduleEmit(),
+        )
+        ..subscribe();
+
+  ref.onDispose(() {
+    debounce?.cancel();
+    controller.close();
+    supabase.removeChannel(ch);
+  });
+
+  yield* controller.stream;
 });
 
 // Provider para obtener top equipos

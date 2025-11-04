@@ -6,7 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.friendships (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     requester_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
-    addressee_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+    receiver_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
     status text DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
     requested_at timestamptz DEFAULT now(),
     responded_at timestamptz,
@@ -14,16 +14,16 @@ CREATE TABLE IF NOT EXISTS public.friendships (
     updated_at timestamptz DEFAULT now(),
     
     -- Constraints
-    CONSTRAINT friendship_no_self CHECK (requester_id != addressee_id),
-    CONSTRAINT friendship_unique UNIQUE (requester_id, addressee_id)
+    CONSTRAINT friendship_no_self CHECK (requester_id != receiver_id),
+    CONSTRAINT friendship_unique UNIQUE (requester_id, receiver_id)
 );
 
 -- 2. Crear índices para optimización
 CREATE INDEX IF NOT EXISTS idx_friendships_requester ON public.friendships(requester_id);
-CREATE INDEX IF NOT EXISTS idx_friendships_addressee ON public.friendships(addressee_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_receiver ON public.friendships(receiver_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_status ON public.friendships(status);
 CREATE INDEX IF NOT EXISTS idx_friendships_requester_status ON public.friendships(requester_id, status);
-CREATE INDEX IF NOT EXISTS idx_friendships_addressee_status ON public.friendships(addressee_id, status);
+CREATE INDEX IF NOT EXISTS idx_friendships_receiver_status ON public.friendships(receiver_id, status);
 
 -- 3. Trigger para actualizar updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -52,7 +52,7 @@ DROP POLICY IF EXISTS "Users can delete their friendships" ON public.friendships
 -- Política para ver amistades propias
 CREATE POLICY "Users can view their own friendships" ON public.friendships
     FOR SELECT USING (
-        auth.uid() = requester_id OR auth.uid() = addressee_id
+        auth.uid() = requester_id OR auth.uid() = receiver_id
     );
 
 -- Política para crear solicitudes de amistad
@@ -64,37 +64,43 @@ CREATE POLICY "Users can create friendship requests" ON public.friendships
 -- Política para actualizar amistades (aceptar/rechazar)
 CREATE POLICY "Users can update friendships" ON public.friendships
     FOR UPDATE USING (
-        auth.uid() = addressee_id  -- Solo el destinatario puede aceptar/rechazar
+        auth.uid() = receiver_id  -- Solo el destinatario puede aceptar/rechazar
     ) WITH CHECK (
-        auth.uid() = addressee_id
+        auth.uid() = receiver_id
     );
 
 -- Política para eliminar amistades
 CREATE POLICY "Users can delete their friendships" ON public.friendships
     FOR DELETE USING (
-        auth.uid() = requester_id OR auth.uid() = addressee_id
+        auth.uid() = requester_id OR auth.uid() = receiver_id
     );
 
 -- 4. Vista para obtener amigos fácilmente
+-- Nota: CREATE OR REPLACE VIEW no permite eliminar columnas existentes.
+-- Para evitar el error 42P16 (cannot drop columns from view),
+-- primero eliminamos la vista si existe y luego la recreamos.
+DROP VIEW IF EXISTS public.user_friends CASCADE;
 CREATE OR REPLACE VIEW public.user_friends AS
 SELECT DISTINCT
     CASE 
-        WHEN f.user_id = auth.uid() THEN f.friend_id 
-        ELSE f.user_id 
+        WHEN f.requester_id = auth.uid() THEN f.receiver_id 
+        ELSE f.requester_id 
     END as friend_user_id,
-    u.email,
-    u.full_name,
-    u.profile_image_url,
+    p.email,
+    p.full_name,
+    p.profile_picture_url,
     f.status,
     f.created_at as friendship_date
 FROM public.friendships f
-JOIN public.users u ON (
-    (f.user_id = auth.uid() AND u.id = f.friend_id) OR
-    (f.friend_id = auth.uid() AND u.id = f.user_id)
+JOIN public.profiles p ON (
+    (f.requester_id = auth.uid() AND p.id = f.receiver_id) OR
+    (f.receiver_id = auth.uid() AND p.id = f.requester_id)
 )
 WHERE f.status = 'accepted';
 
 -- 5. Función para enviar solicitud de amistad
+-- Asegurar reemplazo limpio de la función si ya existe con otra firma/nombres
+DROP FUNCTION IF EXISTS public.send_friend_request(text);
 CREATE OR REPLACE FUNCTION public.send_friend_request(friend_email text)
 RETURNS json AS $$
 DECLARE
@@ -103,7 +109,7 @@ DECLARE
 BEGIN
     -- Buscar usuario por email
     SELECT id INTO friend_user_id 
-    FROM auth.users 
+    FROM public.profiles 
     WHERE email = friend_email;
     
     IF friend_user_id IS NULL THEN
@@ -115,9 +121,9 @@ BEGIN
     END IF;
     
     -- Insertar solicitud
-    INSERT INTO public.friendships (user_id, friend_id, status)
+    INSERT INTO public.friendships (requester_id, receiver_id, status)
     VALUES (auth.uid(), friend_user_id, 'pending')
-    ON CONFLICT (user_id, friend_id) DO NOTHING;
+    ON CONFLICT (requester_id, receiver_id) DO NOTHING;
     
     RETURN json_build_object('success', true, 'message', 'Solicitud enviada');
     
@@ -127,12 +133,14 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- 6. Función para aceptar solicitud de amistad
+-- Asegurar reemplazo limpio de la función si ya existe con otra firma/nombres
+DROP FUNCTION IF EXISTS public.accept_friend_request(uuid);
 CREATE OR REPLACE FUNCTION public.accept_friend_request(friendship_id uuid)
 RETURNS json AS $$
 BEGIN
     UPDATE public.friendships 
     SET status = 'accepted', updated_at = now()
-    WHERE id = friendship_id AND friend_id = auth.uid();
+    WHERE id = friendship_id AND receiver_id = auth.uid();
     
     IF FOUND THEN
         RETURN json_build_object('success', true, 'message', 'Solicitud aceptada');

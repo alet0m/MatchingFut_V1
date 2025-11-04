@@ -20,11 +20,14 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
     final teamsAsync = ref.watch(topTeamsProvider);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+          colors: [
+            Theme.of(context).colorScheme.primary,
+            Theme.of(context).colorScheme.primaryContainer,
+          ],
         ),
       ),
       child: Column(
@@ -39,17 +42,17 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                   children: [
                     IconButton(
                       onPressed: () => context.pop(),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.arrow_back_ios_rounded,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         size: 24,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Buscar Equipos',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                       ),
@@ -57,15 +60,20 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Encuentra equipos por nombre o tag',
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimary.withOpacity(0.7),
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 // Buscador profesional
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -89,9 +97,9 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                         color: Colors.grey[400],
                         fontSize: 16,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.search_rounded,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                         size: 28,
                       ),
                       suffixIcon:
@@ -114,7 +122,7 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Theme.of(context).colorScheme.surface,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 16,
@@ -129,8 +137,8 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
           // Lista de equipos
           Expanded(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8F9FA),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(32),
                   topRight: Radius.circular(32),
@@ -198,9 +206,9 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                   );
                 },
                 loading:
-                    () => const Center(
+                    () => Center(
                       child: CircularProgressIndicator(
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                 error:
@@ -245,7 +253,7 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -273,12 +281,17 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [const Color(0xFF2E7D32), const Color(0xFF1B5E20)],
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primaryContainer,
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -312,13 +325,15 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32).withOpacity(0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '#${team.tag}',
-                          style: const TextStyle(
-                            color: Color(0xFF2E7D32),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
@@ -368,12 +383,12 @@ class _TeamsSearchPageState extends ConsumerState<TeamsSearchPage> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32).withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Color(0xFF2E7D32),
+                  color: Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
               ),

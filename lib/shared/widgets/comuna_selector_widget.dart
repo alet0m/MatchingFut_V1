@@ -19,7 +19,9 @@ class ComunaSelector extends ConsumerStatefulWidget {
 class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
   String? _selectedRegionId;
   String? _selectedComunaId;
+  // ignore: unused_field
   String? _selectedComunaName;
+  // ignore: unused_field
   bool _isLoading = false;
 
   @override
@@ -64,14 +66,18 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final regionsAsync = ref.watch(activeRegionsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Región',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: scheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         regionsAsync.when(
@@ -80,15 +86,19 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
               value: _selectedRegionId,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: scheme.surface,
                 hintText: 'Selecciona tu región',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: BorderSide(color: scheme.outlineVariant),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: scheme.outlineVariant),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: scheme.primary, width: 2),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -112,20 +122,23 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
             );
           },
           loading:
-              () => const LinearProgressIndicator(
-                backgroundColor: Colors.white24,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+              () => LinearProgressIndicator(
+                backgroundColor: scheme.surfaceVariant,
+                valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
               ),
           error:
               (error, stackTrace) => Text(
                 'Error al cargar regiones: $error',
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: scheme.error),
               ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Comuna',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: scheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         if (_selectedRegionId != null)
@@ -138,9 +151,12 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
               return comunasAsync.when(
                 data: (comunas) {
                   if (comunas.isEmpty) {
-                    return const Text(
+                    return Text(
                       'No hay comunas disponibles en esta región',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: scheme.onSurfaceVariant,
+                      ),
                     );
                   }
 
@@ -148,15 +164,19 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
                     value: _selectedComunaId,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: scheme.surface,
                       hintText: 'Selecciona tu comuna',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(color: scheme.outlineVariant),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300),
+                        borderSide: BorderSide(color: scheme.outlineVariant),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: scheme.primary, width: 2),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -185,24 +205,25 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
                   );
                 },
                 loading:
-                    () => const LinearProgressIndicator(
-                      backgroundColor: Colors.white24,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Color(0xFF2E7D32),
-                      ),
+                    () => LinearProgressIndicator(
+                      backgroundColor: scheme.surfaceVariant,
+                      valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
                     ),
                 error:
                     (error, stackTrace) => Text(
                       'Error al cargar comunas: $error',
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(color: scheme.error),
                     ),
               );
             },
           )
         else
-          const Text(
+          Text(
             'Primero selecciona una región',
-            style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+            style: TextStyle(
+              fontStyle: FontStyle.italic,
+              color: scheme.onSurfaceVariant,
+            ),
           ),
       ],
     );

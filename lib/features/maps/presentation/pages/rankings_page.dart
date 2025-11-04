@@ -125,6 +125,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -132,11 +133,13 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
               ? 'Rankings de $_selectedComunaName'
               : 'Rankings ELO',
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: scheme.primary,
+          labelColor: scheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
           tabs: const [Tab(text: 'Global'), Tab(text: 'Comuna')],
         ),
       ),
@@ -145,7 +148,7 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
           // Selector de comuna
           Container(
             padding: const EdgeInsets.all(16),
-            color: const Color(0xFFF8F9FA),
+            color: scheme.surface,
             child: ComunaSelector(
               initialComunaId: _selectedComunaId,
               onComunaSelected: _onComunaSelected,
@@ -176,13 +179,19 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.info_outline, size: 48, color: Colors.grey),
+            Icon(
+              Icons.info_outline,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(height: 16),
             Text(
               rankingType == 'global'
                   ? 'No hay equipos en el ranking global todavía'
                   : 'No hay equipos en esta comuna todavía',
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -198,21 +207,23 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
         // Color del fondo según posición
         Color? backgroundColor;
         if (rank == 1) {
-          backgroundColor = Colors.amber[100];
+          backgroundColor = Theme.of(context).colorScheme.primaryContainer;
         } else if (rank == 2)
-          backgroundColor = Colors.grey[200];
+          backgroundColor = Theme.of(context).colorScheme.secondaryContainer;
         else if (rank == 3)
-          backgroundColor = Colors.brown[100];
+          backgroundColor = Theme.of(context).colorScheme.tertiaryContainer;
 
         return Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           color: backgroundColor,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               child: Text(
                 rank.toString(),
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                ),
               ),
             ),
             title: Text(team.name),
@@ -232,7 +243,10 @@ class _RankingsPageState extends ConsumerState<RankingsPage>
                 ),
                 Text(
                   'Partidos: ${team.totalMatches}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/config/supabase_config.dart';
 import '../../data/teams_service.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 // Modelos simples para esta pantalla (evitamos dependencias externas)
 class _ComunaItem {
@@ -148,21 +149,11 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
       ref.invalidate(topTeamsProvider);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Equipo creado exitosamente!'),
-          backgroundColor: Color(0xFF2E7D32),
-        ),
-      );
+      AppSnack.success(context, '¡Equipo creado exitosamente!');
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al crear equipo: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnack.error(context, 'Error al crear equipo: $e');
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -174,13 +165,18 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
     final modalitiesAsync = ref.watch(_modalitiesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+        title: Text(
           'Crear equipo',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: comunasAsync.when(
@@ -232,8 +228,10 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
                           onPressed:
                               _isSubmitting ? null : details.onStepContinue,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E7D32),
-                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
+                            foregroundColor:
+                                Theme.of(context).colorScheme.onPrimary,
                           ),
                           child:
                               _isSubmitting
@@ -335,7 +333,7 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
             children: [
               Switch(
                 value: _autoTag,
-                activeColor: const Color(0xFF2E7D32),
+                activeColor: Theme.of(context).colorScheme.primary,
                 onChanged: (v) => setState(() => _autoTag = v),
               ),
               const SizedBox(width: 8),
@@ -356,8 +354,8 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
               icon: Icons.tag,
             ).copyWith(
               prefixText: '#',
-              prefixStyle: const TextStyle(
-                color: Color(0xFFFF6F00),
+              prefixStyle: TextStyle(
+                color: Theme.of(context).colorScheme.secondary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -396,11 +394,11 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Comuna',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2E7D32),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         const SizedBox(height: 8),
@@ -423,11 +421,11 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
           validator: (v) => v == null ? 'Selecciona una comuna' : null,
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Modalidad',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2E7D32),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         const SizedBox(height: 8),
@@ -451,17 +449,24 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32).withOpacity(0.05),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.info_outline, color: Color(0xFF2E7D32), size: 18),
-              SizedBox(width: 8),
+              Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'La comuna define dónde compites y cómo puntúas en el ranking local.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF2E7D32)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
             ],
@@ -549,7 +554,9 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
     return InputDecoration(
       hintText: hint,
       prefixIcon:
-          icon != null ? Icon(icon, color: const Color(0xFF2E7D32)) : null,
+          icon != null
+              ? Icon(icon, color: Theme.of(context).colorScheme.primary)
+              : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -560,10 +567,10 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF2E7D32)),
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
       ),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: Theme.of(context).colorScheme.surface,
     );
   }
 }

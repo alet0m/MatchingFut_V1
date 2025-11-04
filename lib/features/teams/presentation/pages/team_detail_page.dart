@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'manage_players_page.dart';
+// import 'manage_players_page.dart'; // Temporalmente deshabilitado para desbloquear build
 import 'package:go_router/go_router.dart';
 import '../../../teams/data/players_service.dart';
 import '../../../../core/config/supabase_config.dart';
@@ -34,22 +34,27 @@ class TeamDetailPage extends ConsumerWidget {
         currentUser?.id == (team.captainId ?? team.captain_id);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
           team.name ?? 'Equipo',
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
         actions: [
           // Botón de Chat siempre visible
           IconButton(
             tooltip: 'Chat del equipo',
-            icon: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+            icon: Icon(
+              Icons.chat_bubble_outline,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
             onPressed: () {
               // Navega al chat del equipo usando GoRouter
               context.push('/teams/${team.id}/chat');
@@ -57,12 +62,16 @@ class TeamDetailPage extends ConsumerWidget {
           ),
           if (isCaptain)
             IconButton(
-              icon: const Icon(Icons.group_add, color: Colors.white),
+              icon: Icon(
+                Icons.group_add,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ManagePlayersPage(team: team),
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Gestión de jugadores no disponible temporalmente',
+                    ),
                   ),
                 );
               },
@@ -78,7 +87,7 @@ class TeamDetailPage extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -91,12 +100,12 @@ class TeamDetailPage extends ConsumerWidget {
               child: Column(
                 children: [
                   CircleAvatar(
-                    backgroundColor: const Color(0xFF2E7D32),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     radius: 40,
                     child: Text(
                       (team.name ?? 'T').substring(0, 1).toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 32,
                       ),
@@ -105,10 +114,10 @@ class TeamDetailPage extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     team.name ?? 'Equipo',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -127,8 +136,9 @@ class TeamDetailPage extends ConsumerWidget {
                       icon: const Icon(Icons.chat_bubble_outline),
                       label: const Text('Abrir chat del equipo'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32),
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor:
+                            Theme.of(context).colorScheme.onPrimary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 12,
@@ -150,7 +160,7 @@ class TeamDetailPage extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -163,22 +173,34 @@ class TeamDetailPage extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Estadísticas',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildStatColumn('Partidos', '${team.totalMatches ?? 0}'),
-                      _buildStatColumn('Ganados', '${team.wins ?? 0}'),
-                      _buildStatColumn('Empates', '${team.draws ?? 0}'),
-                      _buildStatColumn('Perdidos', '${team.losses ?? 0}'),
+                      _buildStatColumn(
+                        context,
+                        'Partidos',
+                        '${team.totalMatches ?? 0}',
+                      ),
+                      _buildStatColumn(context, 'Ganados', '${team.wins ?? 0}'),
+                      _buildStatColumn(
+                        context,
+                        'Empates',
+                        '${team.draws ?? 0}',
+                      ),
+                      _buildStatColumn(
+                        context,
+                        'Perdidos',
+                        '${team.losses ?? 0}',
+                      ),
                     ],
                   ),
                 ],
@@ -192,7 +214,7 @@ class TeamDetailPage extends ConsumerWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -204,14 +226,18 @@ class TeamDetailPage extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.group, size: 48, color: Color(0xFF2E7D32)),
+                  Icon(
+                    Icons.group,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Jugadores del Equipo',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -230,8 +256,12 @@ class TeamDetailPage extends ConsumerWidget {
                                       : Icons.warning,
                                   color:
                                       count >= 7
-                                          ? const Color(0xFF2E7D32)
-                                          : Colors.orange,
+                                          ? Theme.of(
+                                            context,
+                                          ).colorScheme.primary
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.secondary,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -241,8 +271,12 @@ class TeamDetailPage extends ConsumerWidget {
                                     fontWeight: FontWeight.bold,
                                     color:
                                         count >= 7
-                                            ? const Color(0xFF2E7D32)
-                                            : Colors.orange,
+                                            ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                            : Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
                                   ),
                                 ),
                               ],
@@ -257,8 +291,10 @@ class TeamDetailPage extends ConsumerWidget {
                                 fontSize: 14,
                                 color:
                                     count >= 7
-                                        ? const Color(0xFF2E7D32)
-                                        : Colors.orange,
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(
+                                          context,
+                                        ).colorScheme.secondary,
                               ),
                             ),
                             const SizedBox(height: 16),
@@ -267,12 +303,11 @@ class TeamDetailPage extends ConsumerWidget {
                             if (isCaptain)
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) =>
-                                              ManagePlayersPage(team: team),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Gestión de jugadores no disponible temporalmente',
+                                      ),
                                     ),
                                   );
                                 },
@@ -283,8 +318,10 @@ class TeamDetailPage extends ConsumerWidget {
                                       : 'Gestionar Jugadores',
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2E7D32),
-                                  foregroundColor: Colors.white,
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor:
+                                      Theme.of(context).colorScheme.onPrimary,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 24,
                                     vertical: 12,
@@ -306,20 +343,21 @@ class TeamDetailPage extends ConsumerWidget {
                             const SizedBox(height: 16),
                             ElevatedButton.icon(
                               onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) =>
-                                            ManagePlayersPage(team: team),
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Gestión de jugadores no disponible temporalmente',
+                                    ),
                                   ),
                                 );
                               },
                               icon: const Icon(Icons.group_add),
                               label: const Text('Gestionar Jugadores'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2E7D32),
-                                foregroundColor: Colors.white,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
                               ),
                             ),
                           ],
@@ -334,15 +372,15 @@ class TeamDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatColumn(String label, String value) {
+  Widget _buildStatColumn(BuildContext context, String label, String value) {
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2E7D32),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         const SizedBox(height: 4),

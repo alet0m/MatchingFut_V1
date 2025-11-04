@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/matches_providers.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../../../../shared/models/match_model.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class MatchesPageEnhanced extends ConsumerStatefulWidget {
   const MatchesPageEnhanced({super.key});
@@ -32,15 +33,19 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Partidos',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: scheme.onPrimary,
+          ),
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         elevation: 0,
         actions: [
           IconButton(
@@ -58,9 +63,9 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          indicatorColor: scheme.onPrimary,
+          labelColor: scheme.onPrimary,
+          unselectedLabelColor: scheme.onPrimary.withOpacity(0.7),
           tabs: const [
             Tab(text: 'Públicos'),
             Tab(text: 'Mis Partidos'),
@@ -80,7 +85,8 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/create-match'),
-        backgroundColor: const Color(0xFFFF6F00),
+        backgroundColor: scheme.secondary,
+        foregroundColor: scheme.onSecondary,
         child: const Icon(Icons.add),
       ),
     );
@@ -247,13 +253,13 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green[100],
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'PÚBLICO',
                       style: TextStyle(
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -325,8 +331,8 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                   child: ElevatedButton(
                     onPressed: () => _joinPublicMatch(match.id),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -441,10 +447,10 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                             match.guestTeamScore != null)
                           Text(
                             '${match.hostTeamScore} - ${match.guestTeamScore}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF2E7D32),
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           )
                         else
@@ -667,10 +673,10 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                 decoration: BoxDecoration(
                   color:
                       isWin
-                          ? Colors.green
+                          ? Theme.of(context).colorScheme.primary
                           : isDraw
-                          ? Colors.orange
-                          : Colors.red,
+                          ? Theme.of(context).colorScheme.secondary
+                          : Theme.of(context).colorScheme.error,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -715,10 +721,10 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                         : Icons.trending_down,
                     color:
                         isWin
-                            ? Colors.green
+                            ? Theme.of(context).colorScheme.primary
                             : isDraw
-                            ? Colors.orange
-                            : Colors.red,
+                            ? Theme.of(context).colorScheme.secondary
+                            : Theme.of(context).colorScheme.error,
                   ),
                   Text(
                     isWin
@@ -730,10 +736,10 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                       fontSize: 10,
                       color:
                           isWin
-                              ? Colors.green
+                              ? Theme.of(context).colorScheme.primary
                               : isDraw
-                              ? Colors.orange
-                              : Colors.red,
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).colorScheme.error,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -849,24 +855,12 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       await matchesService.joinPublicMatch(matchId);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Te has unido al partido exitosamente'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnack.success(context, 'Te has unido al partido exitosamente');
         ref.invalidate(publicMatchesProvider);
         ref.invalidate(myMatchesProvider);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al unirse al partido: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (mounted) AppSnack.error(context, 'Error al unirse al partido: $e');
     }
   }
 
@@ -890,24 +884,12 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       await matchesService.startMatch(matchId);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Partido iniciado'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnack.success(context, 'Partido iniciado');
         ref.invalidate(myMatchesProvider);
         ref.invalidate(liveMatchesProvider);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al iniciar partido: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (mounted) AppSnack.error(context, 'Error al iniciar partido: $e');
     }
   }
 
@@ -940,34 +922,23 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       await matchesService.cancelMatch(matchId);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Partido cancelado'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        AppSnack.warning(context, 'Partido cancelado');
         ref.invalidate(myMatchesProvider);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cancelar partido: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (mounted) AppSnack.error(context, 'Error al cancelar partido: $e');
     }
   }
 
   Color _getMatchTypeColor(String matchType) {
+    final scheme = Theme.of(context).colorScheme;
     switch (matchType) {
       case 'futbolito':
-        return const Color(0xFF2E7D32);
+        return scheme.primary;
       case 'futbol':
-        return const Color(0xFF1565C0);
+        return scheme.tertiary;
       default:
-        return Colors.grey;
+        return scheme.secondaryContainer;
     }
   }
 
@@ -983,17 +954,18 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
   }
 
   Color _getStatusColor(String status) {
+    final scheme = Theme.of(context).colorScheme;
     switch (status) {
       case 'scheduled':
-        return Colors.blue;
+        return scheme.secondary;
       case 'live':
-        return Colors.red;
+        return Colors.red; // keep strong live indicator
       case 'finished':
-        return Colors.green;
+        return scheme.primary;
       case 'cancelled':
-        return Colors.grey;
+        return scheme.surfaceVariant;
       default:
-        return Colors.grey;
+        return scheme.surfaceVariant;
     }
   }
 

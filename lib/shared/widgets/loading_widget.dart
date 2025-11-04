@@ -17,13 +17,14 @@ class LoadingWidget extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: (color ?? const Color(0xFF2E7D32)).withOpacity(0.1),
+                  color: (color ?? Theme.of(context).colorScheme.primary)
+                      .withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.sports_soccer,
                   size: 40,
-                  color: color ?? const Color(0xFF2E7D32),
+                  color: color ?? Theme.of(context).colorScheme.primary,
                 ),
               )
               .animate(onPlay: (controller) => controller.repeat())
@@ -113,8 +114,9 @@ class CustomErrorWidget extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Reintentar'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: color ?? const Color(0xFF2E7D32),
-                  foregroundColor: Colors.white,
+                  backgroundColor:
+                      color ?? Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,

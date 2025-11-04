@@ -6,6 +6,7 @@ import '../../providers/friends_notifications_provider.dart';
 import '../widgets/search_friends_body.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class FriendsPage extends ConsumerStatefulWidget {
   const FriendsPage({super.key});
@@ -40,14 +41,14 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
       }
     });
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
         title: const Text(
           'Amigos',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
         actions: [
           IconButton(
@@ -58,9 +59,11 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: const Color(0xFFFF6F00),
+          labelColor: Theme.of(context).colorScheme.onPrimary,
+          unselectedLabelColor: Theme.of(
+            context,
+          ).colorScheme.onPrimary.withOpacity(0.7),
+          indicatorColor: Theme.of(context).colorScheme.secondary,
           tabs: [
             const Tab(text: 'Mis Amigos', icon: Icon(Icons.people)),
             _SolicitudesTab(),
@@ -136,7 +139,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
           radius: 25,
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: Theme.of(context).colorScheme.primary,
           backgroundImage:
               friend.profileImageUrl != null
                   ? NetworkImage(friend.profileImageUrl!)
@@ -145,8 +148,8 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
               friend.profileImageUrl == null
                   ? Text(
                     friend.fullName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
@@ -307,8 +310,8 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
                   child: ElevatedButton.icon(
                     onPressed: () => _handleFriendRequest(request.id, true),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar'),
@@ -339,22 +342,15 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
         if (accept) {
           _tabController.index = 0;
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              accept
-                  ? '¡Solicitud aceptada! Ya son amigos'
-                  : 'Solicitud rechazada',
-            ),
-            backgroundColor: accept ? Colors.green : Colors.orange,
-          ),
-        );
+        if (accept) {
+          AppSnack.success(context, '¡Solicitud aceptada! Ya son amigos');
+        } else {
+          AppSnack.warning(context, 'Solicitud rechazada');
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
+        AppSnack.error(context, 'Error: $e');
       }
     }
   }
@@ -388,18 +384,11 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
         await friendsService.removeFriend(friend.id);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Amigo eliminado'),
-              backgroundColor: Colors.orange,
-            ),
-          );
+          AppSnack.info(context, 'Amigo eliminado');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
+          AppSnack.error(context, 'Error: $e');
         }
       }
     }
@@ -436,12 +425,15 @@ class _SolicitudesTab extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6F00),
+                color: Theme.of(context).colorScheme.secondary,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '$count',
-                style: const TextStyle(color: Colors.white, fontSize: 11),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  fontSize: 11,
+                ),
               ),
             ),
           ),

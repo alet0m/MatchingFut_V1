@@ -33,10 +33,7 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
         if (!mounted) return;
         if (isMember != true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No perteneces a este equipo'),
-              backgroundColor: Colors.red,
-            ),
+            const SnackBar(content: Text('No perteneces a este equipo')),
           );
           // Redirigir a Equipos
           context.go('/teams');
@@ -135,7 +132,7 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFF6F00),
+                            color: Theme.of(context).colorScheme.secondary,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -210,8 +207,10 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                         decoration: BoxDecoration(
                           color:
                               isMine
-                                  ? const Color(0xFF2E7D32).withOpacity(0.9)
-                                  : const Color(0xFFF1F3F5),
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
@@ -232,7 +231,9 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                                   color:
                                       isMine
                                           ? Colors.white70
-                                          : const Color(0xFF2E7D32),
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                 ),
                               ),
                             ),
@@ -344,7 +345,7 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                       await repo.setLastSeen(widget.teamId);
                       ref.invalidate(notificationsBadgeCountProvider);
                     },
-                    color: const Color(0xFF2E7D32),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ],
               ),
@@ -370,7 +371,7 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                       repo.setLastSeen(widget.teamId);
                       ref.invalidate(notificationsBadgeCountProvider);
                     },
-                    backgroundColor: const Color(0xFF2E7D32),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     icon: const Icon(Icons.arrow_downward, color: Colors.white),
                     label: Text(
                       _unread > 0 ? '$_unread nuevos' : 'Ir al final',

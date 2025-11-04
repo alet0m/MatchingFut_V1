@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'router/app_router_simple.dart';
-import 'theme/app_theme.dart';
+import 'theme/user_theme_provider.dart';
+import '../shared/ui/app_snack.dart';
 import '../features/friends/providers/friends_notifications_provider.dart';
 
 class FutbolApp extends ConsumerWidget {
@@ -15,39 +16,47 @@ class FutbolApp extends ConsumerWidget {
     ref.listen(friendRequestEventsProvider, (prev, next) {
       final event = next.asData?.value;
       if (event == null) return;
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      if (messenger == null) return;
       String text;
-      Color color;
       switch (event.type) {
         case 'incoming':
           text = 'Nueva solicitud de amistad';
-          color = const Color(0xFF2E7D32);
           break;
         case 'accepted':
           text = '¡Solicitud aceptada! Ya son amigos';
-          color = const Color(0xFF2E7D32);
           break;
         case 'rejected':
           text = 'Solicitud rechazada';
-          color = const Color(0xFFFF6F00);
           break;
         default:
           text = 'Actualización de amistad';
-          color = const Color(0xFF2E7D32);
       }
-      messenger.clearSnackBars();
-      messenger.showSnackBar(
-        SnackBar(content: Text(text), backgroundColor: color),
-      );
+      // Usa AppSnack para respetar el tema
+      if (!context.mounted) return;
+      switch (event.type) {
+        case 'incoming':
+          AppSnack.info(context, text);
+          break;
+        case 'accepted':
+          AppSnack.success(context, text);
+          break;
+        case 'rejected':
+          AppSnack.warning(context, text);
+          break;
+        default:
+          AppSnack.info(context, text);
+      }
     });
+
+    final themeMode = ref.watch(userThemeModeProvider);
+    final lightTheme = ref.watch(userLightThemeProvider);
+    final darkTheme = ref.watch(userDarkThemeProvider);
 
     return MaterialApp.router(
       title: 'Fútbol App - Quilicura',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: themeMode,
       // Keep app adaptive; we could also clamp text scaling if layout requires
       builder: (context, child) {
         // Optional: Slightly limit extreme system text scale on small devices to reduce overflows.

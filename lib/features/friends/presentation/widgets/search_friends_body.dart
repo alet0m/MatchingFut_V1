@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/friends_providers.dart';
 import '../../../../shared/models/user_model.dart';
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class SearchFriendsBody extends ConsumerStatefulWidget {
   const SearchFriendsBody({super.key});
@@ -34,8 +35,8 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: Color(0xFF2E7D32),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -43,15 +44,25 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
       ),
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
         decoration: InputDecoration(
           hintText: 'Buscar por nombre o nickname...',
-          hintStyle: const TextStyle(color: Colors.white70),
-          prefixIcon: const Icon(Icons.search, color: Colors.white70),
+          hintStyle: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+          ),
           suffixIcon:
               _searchController.text.isNotEmpty
                   ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.white70),
+                    icon: Icon(
+                      Icons.clear,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimary.withOpacity(0.7),
+                    ),
                     onPressed: () {
                       _searchController.clear();
                       _clearSearch();
@@ -59,14 +70,17 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
                   )
                   : null,
           filled: true,
-          fillColor: Colors.white.withOpacity(0.1),
+          fillColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(25),
             borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(25),
-            borderSide: const BorderSide(color: Color(0xFFFF6F00), width: 2),
+            borderSide: BorderSide(
+              color: Theme.of(context).colorScheme.secondary,
+              width: 2,
+            ),
           ),
         ),
         onChanged: (value) {
@@ -156,7 +170,7 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
         contentPadding: const EdgeInsets.all(12),
         leading: CircleAvatar(
           radius: 25,
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: Theme.of(context).colorScheme.primary,
           backgroundImage:
               user.profileImageUrl != null
                   ? NetworkImage(user.profileImageUrl!)
@@ -165,8 +179,8 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
               user.profileImageUrl == null
                   ? Text(
                     user.fullName.substring(0, 1).toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
@@ -208,10 +222,12 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
         final status = snapshot.data;
 
         if (status == 'sent') {
-          return const Chip(
-            label: Text('Enviado', style: TextStyle(fontSize: 12)),
-            backgroundColor: Colors.orange,
-            labelStyle: TextStyle(color: Colors.white),
+          return Chip(
+            label: const Text('Enviado', style: TextStyle(fontSize: 12)),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            labelStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
           );
         }
 
@@ -228,8 +244,8 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
               ElevatedButton.icon(
                 onPressed: () => _respondToRequest(user.id, true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 8,
@@ -256,18 +272,20 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
             final areFriends = friendshipSnapshot.data ?? false;
 
             if (areFriends) {
-              return const Chip(
-                label: Text('Amigos', style: TextStyle(fontSize: 12)),
-                backgroundColor: Color(0xFF2E7D32),
-                labelStyle: TextStyle(color: Colors.white),
+              return Chip(
+                label: const Text('Amigos', style: TextStyle(fontSize: 12)),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               );
             }
 
             return ElevatedButton.icon(
               onPressed: () => _sendFriendRequest(user),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
@@ -312,12 +330,7 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
           _isSearching = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error en la búsqueda: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnack.error(context, 'Error en la búsqueda: $e');
       }
     }
   }
@@ -336,20 +349,13 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
       await friendsService.sendFriendRequest(user.id);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Solicitud enviada a ${user.fullName}'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        AppSnack.success(context, 'Solicitud enviada a ${user.fullName}');
 
         setState(() {});
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
+        AppSnack.error(context, 'Error: $e');
       }
     }
   }
@@ -362,21 +368,16 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
       if (mounted) {
         ref.invalidate(friendRequestsProvider);
         ref.invalidate(friendsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              accept ? 'Solicitud aceptada' : 'Solicitud rechazada',
-            ),
-            backgroundColor: accept ? Colors.green : Colors.orange,
-          ),
-        );
+        if (accept) {
+          AppSnack.success(context, 'Solicitud aceptada');
+        } else {
+          AppSnack.warning(context, 'Solicitud rechazada');
+        }
         setState(() {});
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
+        AppSnack.error(context, 'Error: $e');
       }
     }
   }

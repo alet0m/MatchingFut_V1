@@ -10,14 +10,61 @@ final friendsServiceProvider = Provider<FriendsService>((ref) {
   return FriendsService(Supabase.instance.client);
 });
 
-// Provider para la lista de amigos
-final friendsProvider = FutureProvider.autoDispose<List<UserModel>>((
+// Provider para la lista de amigos (stream en vivo con debounce + dedupe)
+final friendsProvider = StreamProvider.autoDispose<List<UserModel>>((
   ref,
-) async {
+) async* {
   // Recalcular cuando cambie el estado de autenticación
   ref.watch(authStateProvider);
   final service = ref.read(friendsServiceProvider);
-  return service.getFriends();
+  final supabase = Supabase.instance.client;
+
+  Future<List<UserModel>> fetch() => service.getFriends();
+
+  final controller = StreamController<List<UserModel>>.broadcast();
+  List<UserModel>? lastEmitted;
+  bool computing = false;
+  Timer? debounce;
+
+  void scheduleEmit() {
+    debounce?.cancel();
+    debounce = Timer(const Duration(milliseconds: 200), () async {
+      if (computing) return;
+      computing = true;
+      try {
+        final value = await fetch();
+        // Dedupe por longitud/simple para evitar reconstrucciones innecesarias
+        if (lastEmitted?.length != value.length || (lastEmitted == null)) {
+          lastEmitted = value;
+          controller.add(value);
+        }
+      } finally {
+        computing = false;
+      }
+    });
+  }
+
+  // Emisión inicial
+  scheduleEmit();
+
+  // Realtime sobre friendships (cambios que afecten a la lista)
+  final ch =
+      supabase.channel('realtime:friends:list')
+        ..onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'friendships',
+          callback: (_) => scheduleEmit(),
+        )
+        ..subscribe();
+
+  ref.onDispose(() {
+    debounce?.cancel();
+    controller.close();
+    supabase.removeChannel(ch);
+  });
+
+  yield* controller.stream;
 });
 
 // Provider para solicitudes de amistad pendientes (stream en vivo, estable)

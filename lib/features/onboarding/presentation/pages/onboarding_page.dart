@@ -58,7 +58,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   String _selectedFoot = 'Derecho';
   final List<String> _selectedGoals = [];
   int _currentStep = 0;
-  final int _totalSteps = 5;
+  final int _totalSteps = 6;
+  String _selectedThemeMode = 'system'; // 'system' | 'light' | 'dark'
+  String _selectedSeedHex = '#2E7D32';
+  String _selectedAccentHex = '#FF6F00';
+  String _selectedStyle = 'default'; // 'default' | 'amoled'
   String? _selectedNacionalidad;
   String? _selectedGenero;
   String? _selectedComuna;
@@ -79,15 +83,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       _buildCaracteristicasFisicasStep(),
       _buildExperienciaStep(),
       _buildObjetivosStep(),
+      _buildThemeStep(),
     ];
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Container(
           width: double.infinity,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -108,6 +116,139 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               _buildNavigationButtons(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeStep() {
+    final palettes = [
+      {'name': 'Quilicura', 'seed': '#2E7D32', 'accent': '#FF6F00'},
+      {'name': 'Bosque', 'seed': '#1B5E20', 'accent': '#66BB6A'},
+      {'name': 'Océano', 'seed': '#0D47A1', 'accent': '#00ACC1'},
+      {'name': 'Noche', 'seed': '#212121', 'accent': '#FFAB00'},
+      {'name': 'Fuego', 'seed': '#BF360C', 'accent': '#FFC107'},
+    ];
+
+    Widget modeChip(String label, String value, IconData icon) {
+      final selected = _selectedThemeMode == value;
+      return ChoiceChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18),
+            const SizedBox(width: 6),
+            Text(label),
+          ],
+        ),
+        selected: selected,
+        onSelected: (s) {
+          setState(() => _selectedThemeMode = value);
+        },
+        selectedColor: const Color(0xFF2E7D32),
+        labelStyle: TextStyle(color: selected ? Colors.white : Colors.black87),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tema de la app',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ).animate().fadeIn(duration: 800.ms),
+            const SizedBox(height: 12),
+            const Text(
+              'Elige los colores y el modo. Puedes cambiarlo luego en tu perfil.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Colores',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      for (final p in palettes)
+                        _PaletteCard(
+                          name: p['name']!,
+                          seedHex: p['seed']!,
+                          accentHex: p['accent']!,
+                          selected:
+                              _selectedSeedHex == p['seed']! &&
+                              _selectedAccentHex == p['accent']!,
+                          onTap: () {
+                            setState(() {
+                              _selectedSeedHex = p['seed']!;
+                              _selectedAccentHex = p['accent']!;
+                            });
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Estilo removido: solo paleta + modo
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      modeChip('Sistema', 'system', Icons.settings_suggest),
+                      modeChip('Claro', 'light', Icons.light_mode),
+                      modeChip('Oscuro', 'dark', Icons.dark_mode),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E7D32).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF2E7D32).withOpacity(0.2),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.palette, color: Color(0xFF2E7D32)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Elegiste: seed ${_selectedSeedHex.toUpperCase()}, accent ${_selectedAccentHex.toUpperCase()} · modo ${_selectedThemeMode.toUpperCase()}',
+                            style: const TextStyle(color: Colors.black87),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -355,8 +496,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     min: 0,
                     max: 30,
                     divisions: 30,
-                    label: '$_selectedExperience',
-                    activeColor: const Color(0xFF2E7D32),
+                    label: '$_selectedExperience años',
                     onChanged: (value) {
                       setState(() {
                         _selectedExperience = value.round();
@@ -366,6 +506,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   const SizedBox(height: 20),
                   DropdownButtonFormField<String>(
                     value: _selectedPosition,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     decoration: const InputDecoration(
                       labelText: 'Posición preferida',
                       border: OutlineInputBorder(),
@@ -485,12 +628,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                     }
                                   });
                                 },
-                                selectedColor: const Color(0xFF2E7D32),
+                                selectedColor:
+                                    Theme.of(context).colorScheme.primary,
                                 labelStyle: TextStyle(
                                   color:
                                       _selectedDays.contains(dia)
-                                          ? Colors.white
-                                          : Colors.black54,
+                                          ? Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             )
@@ -520,8 +668,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E7D32),
-                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
                         ),
                         child: Text(_selectedTime.format(context)),
                       ),
@@ -970,6 +1120,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           'comuna': _selectedComuna,
           'bio': jsonEncode(bioJson),
           'tag': tag,
+          'theme_prefs': {
+            'seed': _selectedSeedHex,
+            'accent': _selectedAccentHex,
+            'mode': _selectedThemeMode,
+            'style': _selectedStyle,
+          },
           'has_completed_onboarding': true, // ✅ CRÍTICO: Marcar como completado
         },
       );
@@ -1053,6 +1209,91 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               ),
             ),
           ),
+    );
+  }
+}
+
+class _PaletteCard extends StatelessWidget {
+  final String name;
+  final String seedHex;
+  final String accentHex;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PaletteCard({
+    required this.name,
+    required this.seedHex,
+    required this.accentHex,
+    required this.selected,
+    required this.onTap,
+  });
+
+  Color _hex(String hex) {
+    final clean = hex.replaceAll('#', '');
+    final full = clean.length == 6 ? 'FF$clean' : clean;
+    return Color(int.parse(full, radix: 16));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seed = _hex(seedHex);
+    final accent = _hex(accentHex);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? seed : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: seed,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 2),
+            Text(
+              '#${seedHex.replaceAll('#', '').toUpperCase()} · #${accentHex.replaceAll('#', '').toUpperCase()}',
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

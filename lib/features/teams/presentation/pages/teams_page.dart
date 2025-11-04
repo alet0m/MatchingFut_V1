@@ -11,6 +11,7 @@ import 'team_detail_page.dart';
 import 'teams_search_page.dart';
 import '../../../../core/config/supabase_config.dart';
 import '../../../notifications/presentation/providers/notifications_providers.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class TeamsPage extends ConsumerWidget {
   const TeamsPage({super.key});
@@ -21,30 +22,30 @@ class TeamsPage extends ConsumerWidget {
     final topTeams = ref.watch(topTeamsProvider);
 
     return Container(
-      color: const Color(0xFFF8F9FA),
+      color: Theme.of(context).colorScheme.background,
       child: Column(
         children: [
           // Custom AppBar
           Container(
-            color: const Color(0xFF2E7D32),
+            color: Theme.of(context).colorScheme.primary,
             child: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
                   children: [
-                    const Text(
+                    Text(
                       'Equipos',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.search_rounded,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onPrimary,
                         size: 28,
                       ),
                       onPressed: () {
@@ -60,13 +61,15 @@ class TeamsPage extends ConsumerWidget {
                     const SizedBox(width: 8),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.add_rounded,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onPrimary,
                           size: 24,
                         ),
                         onPressed: () {
@@ -135,10 +138,10 @@ class TeamsPage extends ConsumerWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF2E7D32),
+            color: Theme.of(context).colorScheme.primary,
           ),
         ),
         const SizedBox(height: 16),
@@ -174,7 +177,7 @@ class TeamsPage extends ConsumerWidget {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -187,11 +190,11 @@ class TeamsPage extends ConsumerWidget {
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               child: Text(
                 team.name.substring(0, 1).toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -215,13 +218,13 @@ class TeamsPage extends ConsumerWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6F00),
+                      color: Theme.of(context).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       unread > 99 ? '99+' : '$unread',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -235,13 +238,15 @@ class TeamsPage extends ConsumerWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6F00).withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.secondary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
+                    child: Text(
                       'CAPITÁN',
                       style: TextStyle(
-                        color: Color(0xFFFF6F00),
+                        color: Theme.of(context).colorScheme.secondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -271,11 +276,20 @@ class TeamsPage extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    _buildStatChip('${team.wins}G', Colors.green),
+                    _buildStatChip(
+                      '${team.wins}G',
+                      Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(width: 4),
-                    _buildStatChip('${team.draws}E', Colors.orange),
+                    _buildStatChip(
+                      '${team.draws}E',
+                      Theme.of(context).colorScheme.secondary,
+                    ),
                     const SizedBox(width: 4),
-                    _buildStatChip('${team.losses}P', Colors.red),
+                    _buildStatChip(
+                      '${team.losses}P',
+                      Theme.of(context).colorScheme.error,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -288,7 +302,7 @@ class TeamsPage extends ConsumerWidget {
                         context.push('/teams/${team.id}/chat');
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF2E7D32),
+                        foregroundColor: Theme.of(context).colorScheme.primary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
                           vertical: 8,
@@ -306,13 +320,14 @@ class TeamsPage extends ConsumerWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFF6F00),
+                                color: Theme.of(context).colorScheme.secondary,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 unread > 99 ? '99+' : '$unread',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSecondary,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -331,7 +346,10 @@ class TeamsPage extends ConsumerWidget {
               children: [
                 if (isCaptain)
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert, color: Color(0xFF2E7D32)),
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     onSelected: (value) async {
                       switch (value) {
                         case 'edit':
@@ -344,13 +362,16 @@ class TeamsPage extends ConsumerWidget {
                     },
                     itemBuilder:
                         (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit, color: Color(0xFF2E7D32)),
-                                SizedBox(width: 8),
-                                Text('Editar equipo'),
+                                Icon(
+                                  Icons.edit,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text('Editar equipo'),
                               ],
                             ),
                           ),
@@ -370,9 +391,9 @@ class TeamsPage extends ConsumerWidget {
                         ],
                   ),
                 const SizedBox(width: 8),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
-                  color: Color(0xFF2E7D32),
+                  color: Theme.of(context).colorScheme.primary,
                   size: 16,
                 ),
               ],
@@ -420,12 +441,12 @@ class TeamsPage extends ConsumerWidget {
         },
       );
     } else {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         icon: Icons.sports_soccer,
         title: 'No hay equipos disponibles',
         description:
             'Aún no hay equipos registrados en la plataforma.\n¡Sé el primero en crear uno!',
-        color: Color(0xFF2E7D32),
+        color: Theme.of(context).colorScheme.primary,
       );
     }
   }
@@ -457,12 +478,7 @@ class TeamsPage extends ConsumerWidget {
     // Si se editó exitosamente, refrescar la lista
     if (result == true && context.mounted) {
       // Refrescar la lista de equipos
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Equipo editado exitosamente!'),
-          backgroundColor: Color(0xFF2E7D32),
-        ),
-      );
+      AppSnack.success(context, '¡Equipo editado exitosamente!');
     }
   }
 
@@ -481,12 +497,7 @@ class TeamsPage extends ConsumerWidget {
 
       // Verificar permisos (capitán)
       if (team.captainId != currentUser.id) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Solo el capitán puede eliminar el equipo'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppSnack.error(context, 'Solo el capitán puede eliminar el equipo');
         return;
       }
 
@@ -531,23 +542,14 @@ class TeamsPage extends ConsumerWidget {
 
       // Mensaje de éxito
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Equipo eliminado'),
-            backgroundColor: Color(0xFF2E7D32),
-          ),
-        );
+        AppSnack.success(context, '✅ Equipo eliminado');
       }
     } catch (e) {
       // Mensaje de error simple
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '❌ Error: ${e.toString().replaceAll('Exception: ', '')}',
-            ),
-            backgroundColor: Colors.red,
-          ),
+        AppSnack.error(
+          context,
+          '❌ Error: ${e.toString().replaceAll('Exception: ', '')}',
         );
       }
     }

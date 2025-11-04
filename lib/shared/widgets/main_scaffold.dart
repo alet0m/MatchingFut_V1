@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/notifications/presentation/providers/notifications_providers.dart';
+import '../../shared/ui/app_snack.dart';
 
 class MainScaffold extends StatelessWidget {
   final Widget child;
@@ -38,25 +39,22 @@ class MainScaffold extends StatelessWidget {
       title = 'Reclutamiento';
     }
 
+    final scheme = Theme.of(context).colorScheme;
     return AppBar(
       title: Text(
         title,
-        style: const TextStyle(
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
           fontWeight: FontWeight.bold,
-          color: Colors.white,
+          color: scheme.onPrimary,
         ),
       ),
-      backgroundColor: const Color(0xFF2E7D32),
-      foregroundColor: Colors.white,
+      backgroundColor: scheme.primary,
+      foregroundColor: scheme.onPrimary,
       elevation: 0,
       leading: Builder(
         builder:
             (context) => IconButton(
-              icon: const Icon(
-                Icons.menu_rounded,
-                color: Colors.white,
-                size: 28,
-              ),
+              icon: Icon(Icons.menu_rounded, color: scheme.onPrimary, size: 28),
               onPressed: () => Scaffold.of(context).openDrawer(),
             ),
       ),
@@ -73,36 +71,37 @@ class MainScaffold extends StatelessWidget {
   }
 
   Widget _buildDrawer(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Drawer(
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+            colors: [scheme.primary, scheme.primary.withOpacity(0.85)],
           ),
         ),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.transparent),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: Colors.transparent),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
                     child: Icon(
                       Icons.sports_soccer,
                       size: 30,
-                      color: Color(0xFF2E7D32),
+                      color: Colors.black54,
                     ),
                   ),
                   SizedBox(height: 16),
                   Text(
                     'Fútbol Quilicura',
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -138,10 +137,7 @@ class MainScaffold extends StatelessWidget {
                 Navigator.pop(context);
                 // TODO: Implement ranking page
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Ranking próximamente'),
-                    backgroundColor: Color(0xFF2E7D32),
-                  ),
+                  const SnackBar(content: Text('Ranking próximamente')),
                 );
               },
             ),
@@ -238,7 +234,6 @@ class MainScaffold extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Primero crea un equipo para ver desafíos'),
-                    backgroundColor: Color(0xFF2E7D32),
                   ),
                 );
               },
@@ -282,12 +277,7 @@ class MainScaffold extends StatelessWidget {
               ),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Para ayuda contacta al administrador'),
-                    backgroundColor: Color(0xFF2E7D32),
-                  ),
-                );
+                AppSnack.info(context, 'Para ayuda contacta al administrador');
               },
             ),
           ],
@@ -311,9 +301,10 @@ class MainScaffold extends StatelessWidget {
       selectedIndex = 4;
     }
 
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -326,9 +317,9 @@ class MainScaffold extends StatelessWidget {
         currentIndex: selectedIndex,
         onTap: (index) => _onNavTap(context, index),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF2E7D32),
-        unselectedItemColor: Colors.grey[600],
+        backgroundColor: scheme.surface,
+        selectedItemColor: scheme.primary,
+        unselectedItemColor: Theme.of(context).colorScheme.onSurfaceVariant,
         selectedFontSize: 12,
         unselectedFontSize: 12,
         elevation: 0,
@@ -404,9 +395,13 @@ class _NotificationsBell extends StatelessWidget {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12.0),
-                child: Icon(Icons.notifications, color: Colors.white, size: 26),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                child: Icon(
+                  Icons.notifications,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  size: 26,
+                ),
               ),
               if (count > 0)
                 Positioned(
@@ -418,13 +413,13 @@ class _NotificationsBell extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6F00),
+                      color: Theme.of(context).colorScheme.secondary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       count > 99 ? '99+' : '$count',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSecondary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),

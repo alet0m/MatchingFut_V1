@@ -9,6 +9,7 @@ import 'complete_edit_profile_page.dart';
 import '../../../friends/providers/friends_providers.dart';
 import '../../../safety/data/safety_service.dart';
 import '../../../safety/data/safety_providers.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   final String? userId; // Si es null, muestra el perfil propio
@@ -24,6 +25,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   int? _globalRank;
   int? _totalPlayers;
   List<Map<String, dynamic>> _teams = const [];
+  String _themeMode = 'system'; // 'system' | 'light' | 'dark'
+  String _seedHex = '#2E7D32';
+  String _accentHex = '#FF6F00';
+  String _style = 'default';
 
   @override
   void initState() {
@@ -119,35 +124,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             'tarjetas_rojas': player['red_cards'] ?? 0,
             'elo': player['elo_rating'] ?? 1000,
           };
-        } else {
-          // Si no existe fila en players para este usuario, la creamos con valores por defecto
-          try {
-            await supabase.from('players').insert({'id': targetUserId});
-            final created =
-                await supabase
-                    .from('players')
-                    .select(
-                      'goals,assists,matches_played,wins,losses,draws,yellow_cards,red_cards,minutes_played,elo_rating',
-                    )
-                    .eq('id', targetUserId)
-                    .maybeSingle();
-            if (created != null) {
-              stats = {
-                'partidos_jugados': created['matches_played'] ?? 0,
-                'goles': created['goals'] ?? 0,
-                'asistencias': created['assists'] ?? 0,
-                'victorias': created['wins'] ?? 0,
-                'derrotas': created['losses'] ?? 0,
-                'empates': created['draws'] ?? 0,
-                'tarjetas_amarillas': created['yellow_cards'] ?? 0,
-                'tarjetas_rojas': created['red_cards'] ?? 0,
-                'elo': created['elo_rating'] ?? 1000,
-              };
-            }
-          } catch (e) {
-            debugPrint('Create default player row failed: $e');
-          }
-        }
+        } // if player is null, keep defaults without attempting insert (avoid RLS violations)
       } catch (e) {
         debugPrint('Stats load warning: $e');
       }
@@ -164,6 +141,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             profile['cover_url'] ??
             profile['header_image_url'] ??
             '';
+
+        // Leer theme_prefs.mode si existe
+        try {
+          final prefs =
+              (profile['theme_prefs'] as Map?)?.cast<String, dynamic>();
+          final mode = (prefs?['mode'] as String?)?.toLowerCase();
+          if (mode == 'light' || mode == 'dark' || mode == 'system') {
+            _themeMode = mode!;
+          }
+          final seed = (prefs?['seed'] as String?) ?? _seedHex;
+          final accent = (prefs?['accent'] as String?) ?? _accentHex;
+          final style = (prefs?['style'] as String?)?.toLowerCase();
+          _seedHex = seed.startsWith('#') ? seed : '#$seed';
+          _accentHex = accent.startsWith('#') ? accent : '#$accent';
+          _style = (style == 'amoled') ? 'amoled' : 'default';
+        } catch (_) {}
       }
 
       // Equipos del usuario
@@ -254,13 +247,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al cargar perfil: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        AppSnack.error(context, 'Error al cargar perfil: ${e.toString()}');
       }
     }
   }
@@ -322,7 +309,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -338,15 +325,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 width: avatarSize,
                 height: avatarSize,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary,
+                      Theme.of(context).colorScheme.primary.withOpacity(0.75),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(avatarSize / 2),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2E7D32).withOpacity(0.3),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withOpacity(0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -375,7 +367,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 style: TextStyle(
                   fontSize: nameSize,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF2E7D32),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 6),
@@ -393,8 +385,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 decoration: BoxDecoration(
                   gradient:
                       hasElo
-                          ? const LinearGradient(
-                            colors: [Color(0xFFFF6F00), Color(0xFFE65100)],
+                          ? LinearGradient(
+                            colors: [
+                              Theme.of(context).colorScheme.secondary,
+                              Theme.of(context).colorScheme.secondaryContainer,
+                            ],
                           )
                           : null,
                   color: hasElo ? null : Colors.grey[200],
@@ -425,7 +420,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -478,19 +473,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             'Partidos',
             matches.toStringAsFixed(0),
             Icons.sports_soccer,
-            const Color(0xFF2E7D32),
+            Theme.of(context).colorScheme.primary,
           ),
           _buildStatCard(
             'ELO',
             matches > 0 ? elo.toStringAsFixed(0) : '---',
             Icons.trending_up,
-            const Color(0xFFFF6F00),
+            Theme.of(context).colorScheme.secondary,
           ),
           _buildStatCard(
             'Equipos',
             _teams.length.toString(),
             Icons.group,
-            const Color(0xFF1976D2),
+            Theme.of(context).colorScheme.tertiary,
           ),
         ];
         if (rankLabel != null && rankLabel.isNotEmpty) {
@@ -499,7 +494,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               'Ranking global',
               rankLabel,
               Icons.emoji_events_outlined,
-              const Color(0xFF6A1B9A),
+              Theme.of(context).colorScheme.secondaryContainer,
             ),
           );
         }
@@ -624,10 +619,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.short_text, color: Color(0xFF2E7D32)),
-              SizedBox(width: 8),
-              Text(
+            children: [
+              Icon(
+                Icons.short_text,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text(
                 'Descripción',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
@@ -661,10 +659,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.interests_outlined, color: Color(0xFF2E7D32)),
-                SizedBox(width: 8),
-                Text(
+              children: [
+                Icon(
+                  Icons.interests_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                const Text(
                   'Intereses',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -679,9 +680,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       .map(
                         (i) => Chip(
                           label: Text(i),
-                          backgroundColor: const Color(
-                            0xFF2E7D32,
-                          ).withOpacity(0.08),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.08),
                         ),
                       )
                       .toList(),
@@ -726,7 +727,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32).withOpacity(0.08),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -734,14 +735,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFF2E7D32), size: 22),
+                Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2E7D32),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],
@@ -821,20 +826,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
-        body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF2E7D32)),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ),
       );
     }
 
     if (_userProfile == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
-        body: const Center(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: Center(
           child: Text(
             'No se pudo cargar el perfil',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       );
@@ -850,20 +859,20 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          nombre.isEmpty ? 'Perfil' : nombre,
-          style: const TextStyle(color: Color(0xFF1B5E20)),
-        ),
+        title: Text(nombre.isEmpty ? 'Perfil' : nombre),
         centerTitle: false,
         actions: [
           IconButton(
             tooltip: 'Amigos',
             onPressed: () => GoRouter.of(context).push('/friends'),
-            icon: const Icon(Icons.people_outline, color: Color(0xFF2E7D32)),
+            icon: Icon(
+              Icons.people_outline,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           if (isOwnProfile)
             IconButton(
@@ -882,7 +891,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   _loadUserProfile();
                 }
               },
-              icon: const Icon(Icons.edit_outlined, color: Color(0xFFFF6F00)),
+              icon: Icon(
+                Icons.edit_outlined,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ),
           if (!isOwnProfile && viewedUserId != null)
             _MoreActionsButton(userId: viewedUserId),
@@ -954,6 +966,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(height: 16),
             _buildInterestsCard(_getBioList('intereses')),
             const SizedBox(height: 28),
+            if (isOwnProfile) _buildThemeSettingsCard(),
+            const SizedBox(height: 12),
             if (isOwnProfile)
               Center(
                 child: ElevatedButton.icon(
@@ -977,6 +991,152 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSettingsCard() {
+    final supabase = ref.read(supabaseClientProvider);
+    Future<void> _save({
+      String? mode,
+      String? seed,
+      String? accent,
+      String? style,
+    }) async {
+      try {
+        final uid = supabase.auth.currentUser?.id;
+        if (uid == null) return;
+        setState(() {
+          if (mode != null) _themeMode = mode;
+          if (seed != null) _seedHex = seed;
+          if (accent != null) _accentHex = accent;
+          if (style != null) _style = style;
+        });
+        final prefs = {
+          'seed': _seedHex,
+          'accent': _accentHex,
+          'mode': _themeMode,
+          'style': _style,
+        };
+        await supabase
+            .from('profiles')
+            .update({'theme_prefs': prefs})
+            .eq('id', uid);
+        if (mounted) AppSnack.success(context, 'Tema actualizado');
+      } catch (e) {
+        if (mounted) AppSnack.error(context, 'Error al guardar: $e');
+      }
+    }
+
+    Widget radio(String value, String label, IconData icon) {
+      return RadioListTile<String>(
+        value: value,
+        groupValue: _themeMode,
+        onChanged: (v) => v == null ? null : _save(mode: v),
+        title: Row(
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            Text(label),
+          ],
+        ),
+        dense: true,
+      );
+    }
+
+    final palettes = [
+      {'name': 'Quilicura', 'seed': '#2E7D32', 'accent': '#FF6F00'},
+      {'name': 'Bosque', 'seed': '#1B5E20', 'accent': '#66BB6A'},
+      {'name': 'Océano', 'seed': '#0D47A1', 'accent': '#00ACC1'},
+      {'name': 'Noche', 'seed': '#212121', 'accent': '#FFAB00'},
+      {'name': 'AMOLED', 'seed': '#000000', 'accent': '#00E5FF'},
+      {'name': 'Fuego', 'seed': '#BF360C', 'accent': '#FFC107'},
+    ];
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.palette,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Tema de la app',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              children: [
+                // Paleta de colores
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Colores',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (final p in palettes)
+                      _PaletteCard(
+                        name: p['name']!,
+                        seedHex: p['seed']!,
+                        accentHex: p['accent']!,
+                        selected:
+                            _seedHex == p['seed']! &&
+                            _accentHex == p['accent']!,
+                        onTap:
+                            () => _save(seed: p['seed']!, accent: p['accent']!),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Estilo removido: usamos solo paleta y modo (system/light/dark)
+                const SizedBox(height: 8),
+                radio('system', 'Seguir el sistema', Icons.settings_suggest),
+                radio('light', 'Claro', Icons.light_mode),
+                radio('dark', 'Oscuro', Icons.dark_mode),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1017,10 +1177,12 @@ class _FriendActionButtonState extends ConsumerState<_FriendActionButton> {
 
         final status = snap.data; // 'sent' | 'received' | null
         if (status == 'sent') {
-          return const Chip(
-            label: Text('Enviado', style: TextStyle(fontSize: 12)),
-            backgroundColor: Colors.orange,
-            labelStyle: TextStyle(color: Colors.white),
+          return Chip(
+            label: const Text('Enviado', style: TextStyle(fontSize: 12)),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
+            labelStyle: TextStyle(
+              color: Theme.of(context).colorScheme.onSecondary,
+            ),
           );
         }
 
@@ -1037,8 +1199,8 @@ class _FriendActionButtonState extends ConsumerState<_FriendActionButton> {
               ElevatedButton.icon(
                 onPressed: _working ? null : () => _respond(true),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
-                  foregroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 8,
@@ -1069,18 +1231,20 @@ class _FriendActionButtonState extends ConsumerState<_FriendActionButton> {
             }
             final areFriends = fSnap.data ?? false;
             if (areFriends) {
-              return const Chip(
-                label: Text('Amigos', style: TextStyle(fontSize: 12)),
-                backgroundColor: Color(0xFF2E7D32),
-                labelStyle: TextStyle(color: Colors.white),
+              return Chip(
+                label: const Text('Amigos', style: TextStyle(fontSize: 12)),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                labelStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               );
             }
 
             return ElevatedButton.icon(
               onPressed: _working ? null : _send,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
               icon: const Icon(Icons.person_add),
               label: const Text('Agregar amigo'),
@@ -1096,22 +1260,11 @@ class _FriendActionButtonState extends ConsumerState<_FriendActionButton> {
     try {
       final friendsService = ref.read(friendsServiceProvider);
       await friendsService.sendFriendRequest(widget.userId);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Solicitud enviada'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      if (mounted) AppSnack.success(context, 'Solicitud enviada');
       setState(() => _working = false);
     } catch (e) {
       setState(() => _working = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) AppSnack.error(context, 'Error: $e');
     }
   }
 
@@ -1123,23 +1276,16 @@ class _FriendActionButtonState extends ConsumerState<_FriendActionButton> {
       if (mounted) {
         ref.invalidate(friendRequestsProvider);
         ref.invalidate(friendsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              accept ? 'Solicitud aceptada' : 'Solicitud rechazada',
-            ),
-            backgroundColor: accept ? Colors.green : Colors.orange,
-          ),
-        );
+        if (accept) {
+          AppSnack.success(context, 'Solicitud aceptada');
+        } else {
+          AppSnack.warning(context, 'Solicitud rechazada');
+        }
       }
       setState(() => _working = false);
     } catch (e) {
       setState(() => _working = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) AppSnack.error(context, 'Error: $e');
     }
   }
 }
@@ -1169,12 +1315,15 @@ class _MoreActionsButton extends ConsumerWidget {
           ],
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: const Icon(Icons.more_vert, color: Color(0xFF2E7D32)),
+        child: Icon(
+          Icons.more_vert,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }
@@ -1211,20 +1360,9 @@ class _MoreActionsButton extends ConsumerWidget {
         ref.invalidate(friendRequestsProvider);
         ref.invalidate(friendsProvider);
         ref.invalidate(blockedUsersProvider);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Usuario bloqueado'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
+        if (context.mounted) AppSnack.warning(context, 'Usuario bloqueado');
       } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
-        }
+        if (context.mounted) AppSnack.error(context, 'Error: $e');
       }
     }
   }
@@ -1320,12 +1458,7 @@ class _MoreActionsButton extends ConsumerWidget {
         if (details.isNotEmpty &&
             (details.length < 10 || details.length > 500)) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Detalles entre 10 y 500 caracteres'),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AppSnack.error(context, 'Detalles entre 10 y 500 caracteres');
           }
           return;
         }
@@ -1342,23 +1475,105 @@ class _MoreActionsButton extends ConsumerWidget {
           ref.invalidate(friendsProvider);
           ref.invalidate(blockedUsersProvider);
         }
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Reporte enviado. Gracias.'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        }
+        if (context.mounted)
+          AppSnack.success(context, 'Reporte enviado. Gracias.');
       } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
-        }
+        if (context.mounted) AppSnack.error(context, 'Error: $e');
       }
     }
   }
 }
 
 // ignore_for_file: deprecated_member_use
+
+class _PaletteCard extends StatelessWidget {
+  final String name;
+  final String seedHex;
+  final String accentHex;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PaletteCard({
+    required this.name,
+    required this.seedHex,
+    required this.accentHex,
+    required this.selected,
+    required this.onTap,
+  });
+
+  Color _hex(String hex) {
+    final clean = hex.replaceAll('#', '');
+    final full = clean.length == 6 ? 'FF$clean' : clean;
+    return Color(int.parse(full, radix: 16));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seed = _hex(seedHex);
+    final accent = _hex(accentHex);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? seed : Colors.grey.shade300,
+            width: selected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: seed,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '#${seedHex.replaceAll('#', '').toUpperCase()} · #${accentHex.replaceAll('#', '').toUpperCase()}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
