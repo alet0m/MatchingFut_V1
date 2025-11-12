@@ -83,12 +83,13 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+          colors: [scheme.primary, scheme.primary.withValues(alpha: 0.85)],
         ),
       ),
       child: Scaffold(
@@ -167,6 +168,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
   }
 
   Widget _buildTabBar() {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       decoration: BoxDecoration(
@@ -180,7 +182,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
           borderRadius: BorderRadius.circular(12),
         ),
         indicatorPadding: const EdgeInsets.all(4),
-        labelColor: const Color(0xFF2E7D32),
+        labelColor: scheme.primary,
         unselectedLabelColor: Colors.white70,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600),
         dividerColor: Colors.transparent,
@@ -256,6 +258,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
     required List<String> items,
     required void Function(String?) onChanged,
   }) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -271,7 +274,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
           ),
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white70),
-          dropdownColor: const Color(0xFF2E7D32),
+          dropdownColor: scheme.primary,
           items:
               items.map((item) {
                 return DropdownMenuItem<String>(
@@ -328,8 +331,10 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
         );
       },
       loading:
-          () => const Center(
-            child: CircularProgressIndicator(color: Color(0xFF2E7D32)),
+          () => Center(
+            child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
       error:
           (error, _) => Center(
@@ -451,10 +456,10 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
               // Título principal
               Text(
                 post.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
 
@@ -484,7 +489,10 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
                     post.isTeamPost
                         ? post.experienceLevel ?? 'Cualquier nivel'
                         : post.playerExperience ?? 'Nivel flexible',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -496,7 +504,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
                 post.description,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   height: 1.4,
                 ),
                 maxLines: 2,
@@ -512,11 +520,13 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
                     radius: 16,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage:
-                        post.authorPhotoUrl != null
+                        (post.authorPhotoUrl != null &&
+                                post.authorPhotoUrl!.isNotEmpty)
                             ? NetworkImage(post.authorPhotoUrl!)
                             : null,
                     child:
-                        post.authorPhotoUrl == null
+                        (post.authorPhotoUrl == null ||
+                                post.authorPhotoUrl!.isEmpty)
                             ? Text(
                               post.authorName.substring(0, 1).toUpperCase(),
                               style: const TextStyle(
@@ -553,7 +563,7 @@ class _RecruitmentPageState extends ConsumerState<RecruitmentPage>
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey.shade400,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ],
               ),

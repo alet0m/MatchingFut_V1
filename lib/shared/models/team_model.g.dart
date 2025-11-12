@@ -18,6 +18,8 @@ _$TeamModelImpl _$$TeamModelImplFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(_$FootballModalityEnumMap, json['modality']) ??
           FootballModality.futbolito,
       eloRating: (json['eloRating'] as num?)?.toInt() ?? 1200,
+      leaguePoints: (json['leaguePoints'] as num?)?.toInt() ?? 100,
+      leagueTier: json['leagueTier'] as String?,
       totalMatches: (json['totalMatches'] as num?)?.toInt() ?? 0,
       wins: (json['wins'] as num?)?.toInt() ?? 0,
       losses: (json['losses'] as num?)?.toInt() ?? 0,
@@ -38,6 +40,8 @@ Map<String, dynamic> _$$TeamModelImplToJson(_$TeamModelImpl instance) =>
       'comunaId': instance.comunaId,
       'modality': _$FootballModalityEnumMap[instance.modality]!,
       'eloRating': instance.eloRating,
+      'leaguePoints': instance.leaguePoints,
+      'leagueTier': instance.leagueTier,
       'totalMatches': instance.totalMatches,
       'wins': instance.wins,
       'losses': instance.losses,

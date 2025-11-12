@@ -123,7 +123,7 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
           },
           loading:
               () => LinearProgressIndicator(
-                backgroundColor: scheme.surfaceVariant,
+                backgroundColor: scheme.surfaceContainerHighest,
                 valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
               ),
           error:
@@ -206,7 +206,7 @@ class _ComunaSelectorState extends ConsumerState<ComunaSelector> {
                 },
                 loading:
                     () => LinearProgressIndicator(
-                      backgroundColor: scheme.surfaceVariant,
+                      backgroundColor: scheme.surfaceContainerHighest,
                       valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
                     ),
                 error:

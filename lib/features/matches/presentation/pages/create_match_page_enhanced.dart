@@ -5,6 +5,7 @@ import '../../../teams/data/teams_service.dart';
 import '../../providers/matches_providers.dart';
 import '../../../../shared/models/team_model.dart';
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/ui/app_snack.dart';
 
 class CreateMatchPageEnhanced extends ConsumerStatefulWidget {
   final String? teamId;
@@ -71,14 +72,14 @@ class _CreateMatchPageEnhancedState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Crear Partido',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         elevation: 0,
       ),
       body: Form(
@@ -91,7 +92,7 @@ class _CreateMatchPageEnhancedState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMatchTypeSelector(),
+                    _buildMatchVisibilitySelector(),
                     const SizedBox(height: 20),
                     _buildTeamSelector(),
                     const SizedBox(height: 20),
@@ -118,7 +119,8 @@ class _CreateMatchPageEnhancedState
     );
   }
 
-  Widget _buildMatchTypeSelector() {
+  Widget _buildMatchVisibilitySelector() {
+    final isNarrow = MediaQuery.of(context).size.width < 420;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -132,30 +134,58 @@ class _CreateMatchPageEnhancedState
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: RadioListTile<bool>(
+            if (!isNarrow)
+              Row(
+                children: [
+                  Expanded(
+                    child: RadioListTile<bool>(
+                      title: const Text('Público'),
+                      subtitle: const Text('Cualquier equipo puede unirse'),
+                      value: true,
+                      groupValue: _isPublicMatch,
+                      onChanged:
+                          (value) =>
+                              setState(() => _isPublicMatch = value ?? true),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: RadioListTile<bool>(
+                      title: const Text('Privado'),
+                      subtitle: const Text('Invitar a un equipo específico'),
+                      value: false,
+                      groupValue: _isPublicMatch,
+                      onChanged:
+                          (value) =>
+                              setState(() => _isPublicMatch = value ?? false),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  RadioListTile<bool>(
                     title: const Text('Público'),
                     subtitle: const Text('Cualquier equipo puede unirse'),
                     value: true,
                     groupValue: _isPublicMatch,
                     onChanged:
-                        (value) => setState(() => _isPublicMatch = value!),
+                        (value) =>
+                            setState(() => _isPublicMatch = value ?? true),
                   ),
-                ),
-                Expanded(
-                  child: RadioListTile<bool>(
+                  const Divider(height: 0),
+                  RadioListTile<bool>(
                     title: const Text('Privado'),
                     subtitle: const Text('Invitar a un equipo específico'),
                     value: false,
                     groupValue: _isPublicMatch,
                     onChanged:
-                        (value) => setState(() => _isPublicMatch = value!),
+                        (value) =>
+                            setState(() => _isPublicMatch = value ?? false),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),
@@ -267,6 +297,7 @@ class _CreateMatchPageEnhancedState
     IconData icon,
   ) {
     final isSelected = _matchType == value;
+    final scheme = Theme.of(context).colorScheme;
 
     return GestureDetector(
       onTap: () => setState(() => _matchType = value),
@@ -275,10 +306,13 @@ class _CreateMatchPageEnhancedState
         decoration: BoxDecoration(
           color:
               isSelected
-                  ? const Color(0xFF2E7D32).withOpacity(0.1)
-                  : Colors.grey[100],
+                  ? scheme.primary.withValues(alpha: 0.08)
+                  : Theme.of(context).colorScheme.surface,
           border: Border.all(
-            color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[300]!,
+            color:
+                isSelected
+                    ? scheme.primary
+                    : Theme.of(context).colorScheme.outlineVariant,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(8),
@@ -287,7 +321,10 @@ class _CreateMatchPageEnhancedState
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF2E7D32) : Colors.grey,
+              color:
+                  isSelected
+                      ? scheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -295,16 +332,25 @@ class _CreateMatchPageEnhancedState
               title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[700],
+                color:
+                    isSelected
+                        ? scheme.primary
+                        : Theme.of(context).colorScheme.onSurface,
               ),
             ),
             Text(
               players,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             Text(
               duration,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -313,6 +359,7 @@ class _CreateMatchPageEnhancedState
   }
 
   Widget _buildDateTimeSelector() {
+    final isNarrow = MediaQuery.of(context).size.width < 420;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -326,10 +373,37 @@ class _CreateMatchPageEnhancedState
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
+            if (!isNarrow)
+              Row(
+                children: [
+                  Expanded(
+                    child: ListTile(
+                      leading: const Icon(Icons.calendar_today),
+                      title: Text(
+                        _selectedDate == null
+                            ? 'Seleccionar fecha'
+                            : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                      ),
+                      onTap: _selectDate,
+                    ),
+                  ),
+                  Expanded(
+                    child: ListTile(
+                      leading: const Icon(Icons.access_time),
+                      title: Text(
+                        _selectedTime == null
+                            ? 'Seleccionar hora'
+                            : _selectedTime!.format(context),
+                      ),
+                      onTap: _selectTime,
+                    ),
+                  ),
+                ],
+              )
+            else
+              Column(
+                children: [
+                  ListTile(
                     leading: const Icon(Icons.calendar_today),
                     title: Text(
                       _selectedDate == null
@@ -338,9 +412,7 @@ class _CreateMatchPageEnhancedState
                     ),
                     onTap: _selectDate,
                   ),
-                ),
-                Expanded(
-                  child: ListTile(
+                  ListTile(
                     leading: const Icon(Icons.access_time),
                     title: Text(
                       _selectedTime == null
@@ -349,9 +421,8 @@ class _CreateMatchPageEnhancedState
                     ),
                     onTap: _selectTime,
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
           ],
         ),
       ),
@@ -432,13 +503,22 @@ class _CreateMatchPageEnhancedState
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
-                  border: Border.all(color: Colors.green[200]!),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    Icon(
+                      Icons.check_circle,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -491,17 +571,19 @@ class _CreateMatchPageEnhancedState
   }
 
   Widget _buildCreateButton() {
+    final scheme = Theme.of(context).colorScheme;
     return FloatingActionButton.extended(
       onPressed: _isLoading ? null : _createMatch,
-      backgroundColor: const Color(0xFF2E7D32),
+      backgroundColor: scheme.primary,
+      foregroundColor: scheme.onPrimary,
       icon:
           _isLoading
-              ? const SizedBox(
+              ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                 ),
               )
               : const Icon(Icons.add),
@@ -608,22 +690,15 @@ class _CreateMatchPageEnhancedState
           ));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isPublicMatch
-                  ? 'Partido público creado exitosamente'
-                  : 'Invitación enviada al equipo oponente',
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        final msg =
+            _isPublicMatch
+                ? 'Partido público creado exitosamente'
+                : 'Invitación enviada al equipo oponente';
+        AppSnack.success(context, msg);
         context.go('/matches');
       }
     } catch (e) {
-      if (mounted) {
-        _showErrorSnackBar('Error al crear el partido: $e');
-      }
+      if (mounted) AppSnack.error(context, 'Error al crear el partido: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -632,8 +707,6 @@ class _CreateMatchPageEnhancedState
   }
 
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
-    );
+    AppSnack.error(context, message);
   }
 }

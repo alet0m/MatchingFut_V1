@@ -22,7 +22,7 @@ class TeamsPage extends ConsumerWidget {
     final topTeams = ref.watch(topTeamsProvider);
 
     return Container(
-      color: Theme.of(context).colorScheme.background,
+      color: Theme.of(context).colorScheme.surface,
       child: Column(
         children: [
           // Custom AppBar
@@ -63,7 +63,7 @@ class TeamsPage extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onPrimary.withOpacity(0.2),
+                        ).colorScheme.onPrimary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
@@ -261,8 +261,8 @@ class TeamsPage extends ConsumerWidget {
                 if (team.tag?.isNotEmpty == true) ...[
                   Text(
                     '#${team.tag}',
-                    style: const TextStyle(
-                      color: Color(0xFFFF6F00),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),

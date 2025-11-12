@@ -13,6 +13,9 @@ class PlayerModel with _$PlayerModel {
     String? email,
     String? position, // Portero, Defensa, Mediocampo, Delantero
     @Default(1200) int elo,
+    // Liga basada en puntos (nuevo ranking principal)
+    @Default(100) int leaguePoints,
+    String? leagueTier,
     @Default(0) int goalsScored,
     @Default(0) int assists,
     @Default(0) int yellowCards,

@@ -17,7 +17,7 @@ BEGIN
             'draws', COALESCE(stats.draws, 0),
             'win_rate', CASE 
                 WHEN COALESCE(stats.total_matches, 0) > 0 
-                THEN ROUND((COALESCE(stats.wins, 0)::float / COALESCE(stats.total_matches, 0)::float) * 100, 1)
+                THEN ROUND(((COALESCE(stats.wins, 0)::numeric / NULLIF(COALESCE(stats.total_matches, 0),0)::numeric) * 100)::numeric, 1)
                 ELSE 0
             END,
             'sectors_controlled', COALESCE(territories.sector_count, 0),

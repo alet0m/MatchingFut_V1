@@ -165,7 +165,7 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
     final modalitiesAsync = ref.watch(_modalitiesProvider);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         iconTheme: IconThemeData(
@@ -449,7 +449,9 @@ class _CreateTeamPageNewState extends ConsumerState<CreateTeamPageNew> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            color: Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(

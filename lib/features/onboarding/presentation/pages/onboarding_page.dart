@@ -16,6 +16,10 @@ class OnboardingPage extends ConsumerStatefulWidget {
 }
 
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
+  // Cache de usuario para evitar perder la referencia si currentUserProvider se vuelve null momentáneamente (race en web/restauración de sesión)
+  String? _cachedUserId;
+  bool _finalizing = false;
+  dynamic _authSub;
   Widget _buildProgressBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -31,14 +35,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 decoration: BoxDecoration(
                   color:
                       isActive
-                          ? Color(0xFFFF6F00)
-                          : Colors.white.withOpacity(0.3),
+                          ? Theme.of(context).colorScheme.secondary
+                          : Theme.of(
+                            context,
+                          ).colorScheme.onPrimary.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                   boxShadow:
                       isActive
                           ? [
                             BoxShadow(
-                              color: Color(0xFFFF6F00).withOpacity(0.3),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.secondary.withValues(alpha: 0.3),
                               blurRadius: 4,
                             ),
                           ]
@@ -62,7 +70,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   String _selectedThemeMode = 'system'; // 'system' | 'light' | 'dark'
   String _selectedSeedHex = '#2E7D32';
   String _selectedAccentHex = '#FF6F00';
-  String _selectedStyle = 'default'; // 'default' | 'amoled'
+  final String _selectedStyle = 'default'; // 'default' | 'amoled'
   String? _selectedNacionalidad;
   String? _selectedGenero;
   String? _selectedComuna;
@@ -76,7 +84,63 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 20, minute: 0);
 
   @override
+  void initState() {
+    super.initState();
+    // Inicializa cache con el user actual (si existe)
+    final live = ref.read(currentUserProvider);
+    _cachedUserId = live?.id;
+    // Mantén cache actualizada ante cambios de sesión
+    _authSub = ref.listenManual(authStateProvider, (prev, next) {
+      final u = ref.read(currentUserProvider);
+      if (u != null) _cachedUserId = u.id;
+      setState(() {}); // refrescar botones/hints si cambia sesión
+    });
+  }
+
+  @override
+  void dispose() {
+    try {
+      _authSub?.close();
+    } catch (_) {}
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Observa el usuario en cada build; si aparece y no lo teníamos cacheado, guardarlo
+    final currentUser = ref.watch(currentUserProvider);
+    if (currentUser != null) {
+      _cachedUserId ??= currentUser.id;
+    }
+    // Si se perdió la sesión durante el onboarding (cierre manual o expiración), mostrar aviso amigable en vez de seguir
+    if (currentUser == null && _cachedUserId == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.lock_outline, size: 64, color: Colors.redAccent),
+              const SizedBox(height: 16),
+              const Text(
+                'Sesión no disponible',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Inicia sesión para completar tu onboarding.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => context.go('/login'),
+                icon: const Icon(Icons.login),
+                label: const Text('Ir a Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final List<Widget> steps = [
       _buildDatosPersonalesStep(),
       _buildComunaGeneroNacionalidadStep(),
@@ -94,7 +158,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             gradient: LinearGradient(
               colors: [
                 Theme.of(context).colorScheme.primary,
-                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -145,8 +209,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         onSelected: (s) {
           setState(() => _selectedThemeMode = value);
         },
-        selectedColor: const Color(0xFF2E7D32),
-        labelStyle: TextStyle(color: selected ? Colors.white : Colors.black87),
+        selectedColor: Theme.of(context).colorScheme.primary,
+        labelStyle: TextStyle(
+          color:
+              selected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       );
     }
 
@@ -226,15 +295,22 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32).withOpacity(0.08),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF2E7D32).withOpacity(0.2),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.palette, color: Color(0xFF2E7D32)),
+                        Icon(
+                          Icons.palette,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -263,7 +339,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white24),
             ),
@@ -742,7 +818,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     min: 150,
                     max: 200,
                     divisions: 50,
-                    activeColor: const Color(0xFF2E7D32),
+                    activeColor: Theme.of(context).colorScheme.primary,
                     onChanged: (value) {
                       setState(() {
                         _selectedHeight = value.round();
@@ -762,7 +838,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     min: 50,
                     max: 120,
                     divisions: 70,
-                    activeColor: const Color(0xFF2E7D32),
+                    activeColor: Theme.of(context).colorScheme.primary,
                     onChanged: (value) {
                       setState(() {
                         _selectedWeight = value.round();
@@ -788,12 +864,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                     _selectedFoot = selected ? foot : '';
                                   });
                                 },
-                                selectedColor: const Color(0xFF2E7D32),
+                                selectedColor:
+                                    Theme.of(context).colorScheme.primary,
                                 labelStyle: TextStyle(
                                   color:
                                       _selectedFoot == foot
-                                          ? Colors.white
-                                          : Colors.black54,
+                                          ? Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary
+                                          : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             )
@@ -820,7 +901,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.2) : Colors.white,
+          color: selected ? color.withValues(alpha: 0.2) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected ? color : Colors.grey.shade300,
@@ -903,7 +984,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             }
                             if (mounted) setState(() {});
                           },
-                          activeColor: const Color(0xFF2E7D32),
+                          activeColor: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ],
@@ -912,15 +993,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32).withOpacity(0.1),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
+                    child: Text(
                       '🎯 ¡Perfecto! Con esta información podremos conectarte con los mejores partidos y jugadores que coincidan con tu perfil.',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF2E7D32),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -961,21 +1044,46 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             const SizedBox.shrink(),
           ElevatedButton(
             onPressed:
-                _currentStep == _totalSteps - 1
-                    ? () => _completeOnboarding()
+                (_currentStep == _totalSteps - 1)
+                    ? (_finalizing ||
+                            (_cachedUserId == null &&
+                                ref.read(currentUserProvider) == null)
+                        ? null
+                        : () => _completeOnboarding())
                     : () => _nextStep(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF6F00),
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              foregroundColor: Theme.of(context).colorScheme.onSecondary,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: Text(
-              _currentStep == _totalSteps - 1 ? '¡COMENZAR!' : 'Siguiente',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            child:
+                (_currentStep == _totalSteps - 1)
+                    ? (_finalizing
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Text(
+                          (_cachedUserId == null &&
+                                  ref.read(currentUserProvider) == null)
+                              ? 'Conectando…'
+                              : '¡COMENZAR!',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ))
+                    : const Text(
+                      'Siguiente',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
           ),
         ],
       ),
@@ -988,9 +1096,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       if (_nicknameController.text.trim().isEmpty ||
           _ageController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Completa tu apodo y edad para continuar'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('Completa tu apodo y edad para continuar'),
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -1001,11 +1109,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           _selectedGenero == null ||
           _selectedNacionalidad == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+          SnackBar(
+            content: const Text(
               'Completa comuna, género y nacionalidad para continuar',
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
         return;
@@ -1021,41 +1129,45 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   Future<void> _completeOnboarding() async {
     if (_selectedNacionalidad == null || _selectedNacionalidad!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debes seleccionar tu nacionalidad.'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Debes seleccionar tu nacionalidad.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
     }
     if (_selectedGenero == null || _selectedGenero!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debes seleccionar tu género.'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Debes seleccionar tu género.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
     }
     if (_selectedComuna == null || _selectedComuna!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debes seleccionar una comuna.'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: const Text('Debes seleccionar una comuna.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
     }
     try {
+      setState(() => _finalizing = true);
       final authService = ref.read(authServiceProvider);
-      final currentUser = ref.read(currentUserProvider);
-      if (currentUser == null) {
+      // Intentar recuperar usuario: usar cache si currentUserProvider ahora es null
+      final liveUser = ref.read(currentUserProvider);
+      final effectiveUserId = liveUser?.id ?? _cachedUserId;
+      if (effectiveUserId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Usuario no autenticado'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text('Usuario no autenticado (sesión perdida)'),
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
+        setState(() => _finalizing = false);
         return;
       }
       // Generar tag único de 4 dígitos para el usuario
@@ -1104,7 +1216,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       };
 
       await authService.updateUserProfile(
-        userId: currentUser.id,
+        userId: effectiveUserId,
         data: {
           // Usar solo columnas válidas en la tabla profiles
           'full_name': _nicknameController.text.trim(),
@@ -1140,17 +1252,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al guardar el perfil: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
             duration: const Duration(seconds: 5),
             action: SnackBarAction(
               label: 'Reintentar',
-              textColor: Colors.white,
+              textColor: Theme.of(context).colorScheme.onError,
               onPressed: () => _completeOnboarding(),
             ),
           ),
         );
       }
       // No navegar si hay error
+      if (mounted) setState(() => _finalizing = false);
       return;
     }
   }
@@ -1169,18 +1282,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle,
-                    color: Color(0xFF2E7D32),
+                    color: Theme.of(context).colorScheme.primary,
                     size: 80,
                   ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     '¡Perfil Completado!',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ).animate().fadeIn(duration: 800.ms, delay: 400.ms),
                   const SizedBox(height: 10),
@@ -1196,8 +1309,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       context.go('/dashboard');
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
                         vertical: 12,
@@ -1252,7 +1365,7 @@ class _PaletteCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

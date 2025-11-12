@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'manage_players_page.dart'; // Temporalmente deshabilitado para desbloquear build
+import 'manage_players_page.dart';
 import 'package:go_router/go_router.dart';
 import '../../../teams/data/players_service.dart';
 import '../../../../core/config/supabase_config.dart';
@@ -34,7 +34,7 @@ class TeamDetailPage extends ConsumerWidget {
         currentUser?.id == (team.captainId ?? team.captain_id);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
@@ -67,11 +67,15 @@ class TeamDetailPage extends ConsumerWidget {
                 color: Theme.of(context).colorScheme.onPrimary,
               ),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Gestión de jugadores no disponible temporalmente',
-                    ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => ManagePlayersPage(
+                          teamId: team.id,
+                          teamName: team.name ?? 'Equipo',
+                          isCaptain: isCaptain,
+                        ),
                   ),
                 );
               },
@@ -91,7 +95,7 @@ class TeamDetailPage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -164,7 +168,7 @@ class TeamDetailPage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -218,7 +222,7 @@ class TeamDetailPage extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -303,11 +307,15 @@ class TeamDetailPage extends ConsumerWidget {
                             if (isCaptain)
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Gestión de jugadores no disponible temporalmente',
-                                      ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => ManagePlayersPage(
+                                            teamId: team.id,
+                                            teamName: team.name ?? 'Equipo',
+                                            isCaptain: isCaptain,
+                                          ),
                                     ),
                                   );
                                 },

@@ -5,7 +5,11 @@ import '../../widgets/responsive_panel.dart';
 import '../../data/maps_repository.dart';
 import '../../../../core/config/supabase_config.dart';
 import '../../../../shared/widgets/comuna_selector_widget.dart';
+import '../widgets/summary_widgets.dart';
 
+// Página principal de Ranking (antes "MapsPage").
+// Se elimina la sección de Canchas y se centra en mostrar preview de rankings
+// y acciones territoriales. Mantiene el nombre de la clase para no romper rutas existentes.
 class MapsPage extends ConsumerStatefulWidget {
   const MapsPage({super.key});
 
@@ -30,12 +34,14 @@ class _MapsPageState extends ConsumerState<MapsPage> {
   @override
   Widget build(BuildContext context) {
     // Repositorio real con Supabase, sin datos falsos
+    // Repositorio ya no usa canchas, sólo ranking. ResponsivePanel se adaptó.
     final repo = MapsRepositoryReal(ref.watch(supabaseProvider));
+    // final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Comunas y Ranking'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        title: const Text('Ranking'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -44,18 +50,22 @@ class _MapsPageState extends ConsumerState<MapsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 24),
-              // Nuevo: Panel responsivo de Canchas y Ranking controlado por Región/Comuna
+              // Métricas rápidas
+              SummaryMetrics(comunaId: _selectedComunaId),
+              const SizedBox(height: 16),
               const Text(
-                'Canchas y Ranking (Global / Comuna)',
+                'Ranking ELO (Global / Comuna)',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FA),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,9 +76,10 @@ class _MapsPageState extends ConsumerState<MapsPage> {
                       onComunaSelected: _onComunaSelected,
                     ),
                     const SizedBox(height: 16),
+                    // Panel ahora sólo Ranking (se quitó Canchas)
                     ResponsivePanel(
                       region: _selectedRegionName,
-                      comuna: _selectedComunaName ?? '', // vacío => Global
+                      comuna: _selectedComunaName ?? '',
                       repo: repo,
                     ),
                   ],
@@ -76,8 +87,11 @@ class _MapsPageState extends ConsumerState<MapsPage> {
               ),
 
               const SizedBox(height: 24),
+              // Sectores más disputados (si hay comuna seleccionada)
+              HottestSectors(comunaId: _selectedComunaId),
+              const SizedBox(height: 24),
               const Text(
-                '¿Cómo funciona?',
+                '¿Cómo subir en el Ranking?',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
@@ -86,70 +100,41 @@ class _MapsPageState extends ConsumerState<MapsPage> {
               _buildStepCard(
                 context,
                 number: '1',
-                title: 'Explora el Mapa',
+                title: 'Controla Sectores',
                 description:
-                    'Visualiza los sectores disponibles en tu comuna y quién los controla.',
+                    'Conquista sectores activos para obtener presencia territorial y bonificaciones.',
               ),
               _buildStepCard(
                 context,
                 number: '2',
-                title: 'Lanza Desafíos',
+                title: 'Desafía Equipos',
                 description:
-                    'Desafía a equipos que controlan sectores para disputar el territorio.',
+                    'Retar a equipos fuertes te da mayores ganancias de ELO si ganas.',
               ),
               _buildStepCard(
                 context,
                 number: '3',
-                title: 'Juega Partidos',
+                title: 'Juega Partidos Clave',
                 description:
-                    'Organiza y juega partidos en los sectores para ganar control territorial.',
+                    'Participa en partidos oficiales y territoriales para incrementar tu ELO.',
               ),
               _buildStepCard(
                 context,
                 number: '4',
-                title: 'Sube en el Ranking',
+                title: 'Optimiza Estrategia',
                 description:
-                    'Incrementa tu ELO y aumenta tu reputación en la comunidad.',
+                    'Equilibra desafíos, control territorial y consistencia para estabilizar tu ascenso.',
               ),
 
               const SizedBox(height: 24),
-              const Text(
-                'Explora la App',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    context,
-                    title: 'Rankings ELO',
-                    description: 'Clasificación de equipos',
-                    icon: Icons.leaderboard,
-                    color: const Color(0xFFFF6F00),
-                    onTap: () => context.push('/rankings'),
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    title: 'Desafíos',
-                    description: 'Compite por territorios',
-                    icon: Icons.sports_kabaddi,
-                    color: const Color(0xFF1B5E20),
-                    onTap: () => context.push('/challenges'),
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    title: 'Crear Desafío',
-                    description: 'Lanza un nuevo desafío',
-                    icon: Icons.add_location_alt,
-                    color: const Color(0xFFFF6F00),
-                    onTap: () => context.push('/challenges/create'),
-                  ),
-                ],
+              // Card de Ranking Completo, full-width y por encima de los consejos
+              _buildFeatureCard(
+                context,
+                title: 'Ranking Completo',
+                description: 'Ver todos los equipos',
+                icon: Icons.emoji_events,
+                color: Theme.of(context).colorScheme.secondary,
+                onTap: () => context.push('/rankings'),
               ),
             ],
           ),
@@ -190,7 +175,10 @@ class _MapsPageState extends ConsumerState<MapsPage> {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -216,15 +204,15 @@ class _MapsPageState extends ConsumerState<MapsPage> {
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFF2E7D32),
+                color: Theme.of(context).colorScheme.primary,
               ),
               child: Center(
                 child: Text(
                   number,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -245,7 +233,10 @@ class _MapsPageState extends ConsumerState<MapsPage> {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: const TextStyle(fontSize: 14, color: Colors.black87),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -256,3 +247,7 @@ class _MapsPageState extends ConsumerState<MapsPage> {
     );
   }
 }
+
+// ---------- Extras: Summary metrics and hottest sectors cards ----------
+
+// Summary/Hottest widgets moved to summary_widgets.dart

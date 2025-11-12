@@ -65,7 +65,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
           controller: _tabController,
           indicatorColor: scheme.onPrimary,
           labelColor: scheme.onPrimary,
-          unselectedLabelColor: scheme.onPrimary.withOpacity(0.7),
+          unselectedLabelColor: scheme.onPrimary.withValues(alpha: 0.7),
           tabs: const [
             Tab(text: 'Públicos'),
             Tab(text: 'Mis Partidos'),
@@ -84,7 +84,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/create-match'),
+        onPressed: () => context.push('/create-public-match'),
         backgroundColor: scheme.secondary,
         foregroundColor: scheme.onSecondary,
         child: const Icon(Icons.add),
@@ -219,7 +219,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => context.push('/match/${match.id}'),
+        onTap: () => context.push('/matches/${match.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -257,7 +257,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      'PÚBLICO',
+                      match.guestTeamId == null ? 'DESAFÍO' : 'PÚBLICO',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontSize: 10,
@@ -354,7 +354,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => context.push('/match/${match.id}'),
+        onTap: () => context.push('/matches/${match.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -522,7 +522,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
           ),
         ),
         child: InkWell(
-          onTap: () => context.push('/match/${match.id}/live'),
+          onTap: () => context.push('/matches/${match.id}/live'),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -536,7 +536,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Row(
@@ -629,7 +629,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
@@ -661,7 +661,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () => context.push('/match/${match.id}'),
+        onTap: () => context.push('/matches/${match.id}'),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -867,7 +867,7 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
   void _handleMatchAction(MatchModel match, String action) {
     switch (action) {
       case 'edit':
-        context.push('/match/${match.id}/edit');
+        context.push('/matches/${match.id}/edit');
         break;
       case 'start':
         _startMatch(match.id);
@@ -957,23 +957,27 @@ class _MatchesPageEnhancedState extends ConsumerState<MatchesPageEnhanced>
     final scheme = Theme.of(context).colorScheme;
     switch (status) {
       case 'scheduled':
+      case 'pending':
         return scheme.secondary;
       case 'live':
+      case 'active':
         return Colors.red; // keep strong live indicator
       case 'finished':
         return scheme.primary;
       case 'cancelled':
-        return scheme.surfaceVariant;
+        return scheme.surfaceContainerHighest;
       default:
-        return scheme.surfaceVariant;
+        return scheme.surfaceContainerHighest;
     }
   }
 
   String _getStatusLabel(String status) {
     switch (status) {
       case 'scheduled':
+      case 'pending':
         return 'PROGRAMADO';
       case 'live':
+      case 'active':
         return 'EN VIVO';
       case 'finished':
         return 'FINALIZADO';

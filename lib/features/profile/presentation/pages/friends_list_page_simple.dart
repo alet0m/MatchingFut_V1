@@ -169,10 +169,12 @@ class FriendsListPageSimple extends ConsumerWidget {
             CircleAvatar(
               radius: 25,
               backgroundImage:
-                  friendImage != null ? NetworkImage(friendImage) : null,
+                  (friendImage != null && (friendImage as String).isNotEmpty)
+                      ? NetworkImage(friendImage)
+                      : null,
               backgroundColor: Colors.grey[300],
               child:
-                  friendImage == null
+                  (friendImage == null || (friendImage as String).isEmpty)
                       ? const Icon(Icons.person, size: 25, color: Colors.grey)
                       : null,
             ),
@@ -323,7 +325,8 @@ class FriendsListPageSimple extends ConsumerWidget {
                   ),
                   child: ClipOval(
                     child:
-                        profileImage != null
+                        (profileImage != null &&
+                                (profileImage as String).isNotEmpty)
                             ? Image.network(
                               profileImage,
                               width: 56,

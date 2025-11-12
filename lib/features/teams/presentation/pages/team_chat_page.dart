@@ -210,7 +210,7 @@ class _TeamChatPageState extends ConsumerState<TeamChatPage> {
                                   ? Theme.of(context).colorScheme.primary
                                   : Theme.of(
                                     context,
-                                  ).colorScheme.surfaceVariant,
+                                  ).colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(

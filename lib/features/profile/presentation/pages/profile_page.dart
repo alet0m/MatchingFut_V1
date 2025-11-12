@@ -25,15 +25,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   int? _globalRank;
   int? _totalPlayers;
   List<Map<String, dynamic>> _teams = const [];
-  String _themeMode = 'system'; // 'system' | 'light' | 'dark'
-  String _seedHex = '#2E7D32';
-  String _accentHex = '#FF6F00';
-  String _style = 'default';
+  // Theme fields removed; theme customization now handled in Settings page.
+  // Manual listener subscription for auth state changes
+  dynamic _authSub;
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+    // Reintentar/recargar cuando cambie el estado de autenticación.
+    // En Riverpod 2.6+, usar listenManual fuera de build (initState/dispose).
+    _authSub = ref.listenManual(
+      authStateProvider,
+      (prev, next) => _loadUserProfile(),
+    );
+  }
+
+  @override
+  void dispose() {
+    try {
+      _authSub?.close();
+    } catch (_) {}
+    super.dispose();
   }
 
   Future<void> _loadUserProfile() async {
@@ -142,21 +155,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             profile['header_image_url'] ??
             '';
 
-        // Leer theme_prefs.mode si existe
-        try {
-          final prefs =
-              (profile['theme_prefs'] as Map?)?.cast<String, dynamic>();
-          final mode = (prefs?['mode'] as String?)?.toLowerCase();
-          if (mode == 'light' || mode == 'dark' || mode == 'system') {
-            _themeMode = mode!;
-          }
-          final seed = (prefs?['seed'] as String?) ?? _seedHex;
-          final accent = (prefs?['accent'] as String?) ?? _accentHex;
-          final style = (prefs?['style'] as String?)?.toLowerCase();
-          _seedHex = seed.startsWith('#') ? seed : '#$seed';
-          _accentHex = accent.startsWith('#') ? accent : '#$accent';
-          _style = (style == 'amoled') ? 'amoled' : 'default';
-        } catch (_) {}
+        // Theme preferences are now handled exclusively in Settings. No local state needed here.
       }
 
       // Equipos del usuario
@@ -313,7 +312,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 4),
               ),
@@ -328,7 +327,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                   gradient: LinearGradient(
                     colors: [
                       Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.primary.withOpacity(0.75),
+                      Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.75),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -338,7 +339,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     BoxShadow(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.3),
+                      ).colorScheme.primary.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                     ),
@@ -424,7 +425,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -517,7 +518,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -544,7 +545,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -556,7 +557,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF1976D2).withOpacity(0.08),
+              color: Color(0xFF1976D2).withValues(alpha: 0.08),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -591,7 +592,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     : 'Sin ranking',
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 8),
         ],
       ),
@@ -609,7 +610,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -647,7 +648,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -682,7 +683,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           label: Text(i),
                           backgroundColor: Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.08),
+                          ).colorScheme.primary.withValues(alpha: 0.08),
                         ),
                       )
                       .toList(),
@@ -715,7 +716,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -727,7 +728,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.08),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -830,6 +833,40 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         body: Center(
           child: CircularProgressIndicator(
             color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      );
+    }
+
+    // Si no hay usuario autenticado, mostrar CTA amigable en vez de error genérico
+    if (currentUser == null) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.person_outline,
+                size: 56,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Inicia sesión para ver tu perfil',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () => GoRouter.of(context).go('/login'),
+                icon: const Icon(Icons.login),
+                label: const Text('Ir a iniciar sesión'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -966,7 +1003,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             const SizedBox(height: 16),
             _buildInterestsCard(_getBioList('intereses')),
             const SizedBox(height: 28),
-            if (isOwnProfile) _buildThemeSettingsCard(),
+            if (isOwnProfile) _buildThemeLinkCard(context),
             const SizedBox(height: 12),
             if (isOwnProfile)
               Center(
@@ -995,151 +1032,49 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _buildThemeSettingsCard() {
-    final supabase = ref.read(supabaseClientProvider);
-    Future<void> _save({
-      String? mode,
-      String? seed,
-      String? accent,
-      String? style,
-    }) async {
-      try {
-        final uid = supabase.auth.currentUser?.id;
-        if (uid == null) return;
-        setState(() {
-          if (mode != null) _themeMode = mode;
-          if (seed != null) _seedHex = seed;
-          if (accent != null) _accentHex = accent;
-          if (style != null) _style = style;
-        });
-        final prefs = {
-          'seed': _seedHex,
-          'accent': _accentHex,
-          'mode': _themeMode,
-          'style': _style,
-        };
-        await supabase
-            .from('profiles')
-            .update({'theme_prefs': prefs})
-            .eq('id', uid);
-        if (mounted) AppSnack.success(context, 'Tema actualizado');
-      } catch (e) {
-        if (mounted) AppSnack.error(context, 'Error al guardar: $e');
-      }
-    }
-
-    Widget radio(String value, String label, IconData icon) {
-      return RadioListTile<String>(
-        value: value,
-        groupValue: _themeMode,
-        onChanged: (v) => v == null ? null : _save(mode: v),
-        title: Row(
-          children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 8),
-            Text(label),
-          ],
-        ),
-        dense: true,
-      );
-    }
-
-    final palettes = [
-      {'name': 'Quilicura', 'seed': '#2E7D32', 'accent': '#FF6F00'},
-      {'name': 'Bosque', 'seed': '#1B5E20', 'accent': '#66BB6A'},
-      {'name': 'Océano', 'seed': '#0D47A1', 'accent': '#00ACC1'},
-      {'name': 'Noche', 'seed': '#212121', 'accent': '#FFAB00'},
-      {'name': 'AMOLED', 'seed': '#000000', 'accent': '#00E5FF'},
-      {'name': 'Fuego', 'seed': '#BF360C', 'accent': '#FFC107'},
-    ];
-
+  // Instead of embedding theme controls here, show a small card linking to Settings
+  Widget _buildThemeLinkCard(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.palette,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Tema de la app',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: scheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: [
-                // Paleta de colores
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Colores',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    for (final p in palettes)
-                      _PaletteCard(
-                        name: p['name']!,
-                        seedHex: p['seed']!,
-                        accentHex: p['accent']!,
-                        selected:
-                            _seedHex == p['seed']! &&
-                            _accentHex == p['accent']!,
-                        onTap:
-                            () => _save(seed: p['seed']!, accent: p['accent']!),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Estilo removido: usamos solo paleta y modo (system/light/dark)
-                const SizedBox(height: 8),
-                radio('system', 'Seguir el sistema', Icons.settings_suggest),
-                radio('light', 'Claro', Icons.light_mode),
-                radio('dark', 'Oscuro', Icons.dark_mode),
-                const SizedBox(height: 8),
-              ],
-            ),
+          child: Icon(Icons.palette, color: scheme.primary),
+        ),
+        title: const Text('Personaliza el tema de la app'),
+        subtitle: Text(
+          'Elige colores y modo claro/oscuro en Configuración',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-        ],
+        ),
+        trailing: Icon(
+          Icons.chevron_right,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        onTap: () => GoRouter.of(context).push('/settings'),
       ),
     );
   }
+
+  // (Legacy) _buildThemeSettingsCard removed: theme settings now live in Settings page.
 }
 
 class _FriendActionButton extends ConsumerStatefulWidget {
@@ -1475,8 +1410,9 @@ class _MoreActionsButton extends ConsumerWidget {
           ref.invalidate(friendsProvider);
           ref.invalidate(blockedUsersProvider);
         }
-        if (context.mounted)
+        if (context.mounted) {
           AppSnack.success(context, 'Reporte enviado. Gracias.');
+        }
       } catch (e) {
         if (context.mounted) AppSnack.error(context, 'Error: $e');
       }
@@ -1486,94 +1422,4 @@ class _MoreActionsButton extends ConsumerWidget {
 
 // ignore_for_file: deprecated_member_use
 
-class _PaletteCard extends StatelessWidget {
-  final String name;
-  final String seedHex;
-  final String accentHex;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PaletteCard({
-    required this.name,
-    required this.seedHex,
-    required this.accentHex,
-    required this.selected,
-    required this.onTap,
-  });
-
-  Color _hex(String hex) {
-    final clean = hex.replaceAll('#', '');
-    final full = clean.length == 6 ? 'FF$clean' : clean;
-    return Color(int.parse(full, radix: 16));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final seed = _hex(seedHex);
-    final accent = _hex(accentHex);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 140,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? seed : Colors.grey.shade300,
-            width: selected ? 2 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: seed,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: accent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              name,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '#${seedHex.replaceAll('#', '').toUpperCase()} · #${accentHex.replaceAll('#', '').toUpperCase()}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+// PaletteCard widget removed; palette selection was moved to Settings page.

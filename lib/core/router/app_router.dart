@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+// material import no longer required after route removals
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,21 +11,22 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/friends/presentation/pages/friends_page.dart';
 import '../../features/friends/presentation/pages/search_friends_page.dart';
 import '../../features/maps/presentation/pages/maps_page.dart';
-import '../../features/maps/presentation/pages/territorial_map_page.dart';
+// removed territorial_map_page route
 import '../../features/maps/presentation/pages/rankings_page.dart';
-import '../../features/maps/presentation/pages/challenges_page.dart';
-import '../../features/maps/presentation/pages/create_challenge_page.dart';
+// removed challenges pages from maps feature
 import '../../features/teams/presentation/pages/teams_page.dart';
 import '../../features/teams/presentation/pages/team_chat_page.dart';
 import '../../features/challenges/presentation/pages/search_teams_page.dart';
-import '../../features/challenges/presentation/pages/challenges_page.dart'
-    as team_challenges;
+// removed team challenges routes
 import '../../features/matches/presentation/pages/matches_page_enhanced.dart';
 import '../../features/matches/presentation/pages/simple_match_selector.dart';
 import '../../features/matches/presentation/pages/live_match_page.dart';
 import '../../features/matches/presentation/pages/radial_match_search_page.dart';
 import '../../features/matches/presentation/pages/create_public_match_page.dart';
 import '../../features/matches/presentation/pages/create_match_page_enhanced.dart';
+import '../../features/matches/presentation/pages/match_details_page.dart';
+import '../../features/public_matches/presentation/pages/explore_public_matches_page.dart';
+import '../../features/public_matches/presentation/pages/public_match_detail_page.dart';
 import '../../features/recruitment/presentation/pages/recruitment_page.dart';
 import '../../features/recruitment/presentation/pages/create_recruitment_post_page.dart';
 import '../../shared/widgets/main_scaffold.dart';
@@ -187,41 +188,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             name: 'maps',
             builder: (context, state) => const MapsPage(),
           ),
-          GoRoute(
-            path: '/territorial-map',
-            name: 'territorial-map',
-            builder: (context, state) => const TerritorialMapPage(),
-          ),
+          // Eliminadas rutas de mapa territorial y desafíos desde este shell
           GoRoute(
             path: '/rankings',
             name: 'rankings',
             builder: (context, state) => const RankingsPage(),
-          ),
-          GoRoute(
-            path: '/challenges',
-            name: 'challenges-territorial',
-            builder: (context, state) => const ChallengesPage(),
-            routes: [
-              GoRoute(
-                path: 'create',
-                name: 'create-challenge',
-                builder: (context, state) => const CreateChallengePage(),
-              ),
-              GoRoute(
-                path: 'details/:challengeId',
-                name: 'challenge-details',
-                builder: (context, state) {
-                  return const Text('Detalles del desafío - Pendiente');
-                },
-              ),
-              GoRoute(
-                path: 'history/:challengeId',
-                name: 'challenge-history',
-                builder: (context, state) {
-                  return const Text('Historial del desafío - Pendiente');
-                },
-              ),
-            ],
           ),
           GoRoute(
             path: '/teams',
@@ -257,7 +228,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: ':matchId',
                 name: 'match-details',
                 builder: (context, state) {
-                  return const Text('Detalles del partido - Pendiente');
+                  final matchId = state.pathParameters['matchId']!;
+                  return MatchDetailsPage(matchId: matchId);
                 },
               ),
               GoRoute(
@@ -277,6 +249,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 },
               ),
             ],
+          ),
+          GoRoute(
+            path: '/explore',
+            name: 'explore-public-matches',
+            builder: (context, state) => const ExplorePublicMatchesPage(),
           ),
           GoRoute(
             path: '/create-match',
@@ -322,6 +299,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RadialMatchSearchPage(),
       ),
       GoRoute(
+        path: '/public-match/:id',
+        name: 'public-match-detail',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return PublicMatchDetailPage(id: id);
+        },
+      ),
+      GoRoute(
         path: '/search-teams/:teamId',
         name: 'search-teams',
         builder: (context, state) {
@@ -329,14 +314,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return SearchTeamsPage(currentTeamId: teamId);
         },
       ),
-      GoRoute(
-        path: '/challenges/:teamId',
-        name: 'team-challenges',
-        builder: (context, state) {
-          final teamId = state.pathParameters['teamId']!;
-          return team_challenges.ChallengesPage(teamId: teamId);
-        },
-      ),
+      // Eliminadas rutas de desafíos independientes
       GoRoute(
         path: '/live-match/:matchId',
         name: 'live-match',

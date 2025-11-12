@@ -3,11 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Repositorio abstracto para datos del mapa
 abstract class MapsRepository {
-  Future<List<Cancha>> fetchCanchas({
-    required String region,
-    required String comuna,
-  });
-
+  // Eliminada lógica de canchas: sólo ranking.
   Future<List<EquipoRank>> fetchRanking({
     required String region,
     required String comuna,
@@ -17,52 +13,12 @@ abstract class MapsRepository {
 /// Implementación mock con datos de ejemplo
 class MapsRepositoryMock implements MapsRepository {
   @override
-  Future<List<Cancha>> fetchCanchas({
-    required String region,
-    required String comuna,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 250));
-
-    // Datos mock que varían según la comuna
-    final canchas = <Cancha>[
-      Cancha(
-        id: '1',
-        nombre: 'Cancha Municipal $comuna',
-        fotoUrl: null, // Simula cancha sin foto
-        comuna: comuna,
-      ),
-      Cancha(
-        id: '2',
-        nombre: 'Club $comuna',
-        fotoUrl: 'https://picsum.photos/200',
-        comuna: comuna,
-      ),
-      Cancha(
-        id: '3',
-        nombre: 'Estadio Norte',
-        fotoUrl: 'https://picsum.photos/201',
-        comuna: comuna,
-      ),
-    ];
-
-    // Simular diferente cantidad según comuna
-    if (comuna.toLowerCase().contains('quilicura')) {
-      return canchas;
-    } else if (comuna.toLowerCase().contains('santiago')) {
-      return canchas.take(2).toList();
-    } else {
-      return [canchas.first]; // Solo una cancha para otras comunas
-    }
-  }
-
-  @override
   Future<List<EquipoRank>> fetchRanking({
     required String region,
     required String comuna,
   }) async {
     await Future.delayed(const Duration(milliseconds: 250));
 
-    // Datos mock que varían según la comuna
     final baseRanking = <EquipoRank>[
       EquipoRank(id: 'a', nombre: '$comuna FC', puntos: 27, comuna: comuna),
       EquipoRank(id: 'b', nombre: 'Atlético Norte', puntos: 23, comuna: comuna),
@@ -71,7 +27,6 @@ class MapsRepositoryMock implements MapsRepository {
       EquipoRank(id: 'e', nombre: 'Unión $comuna', puntos: 12, comuna: comuna),
     ];
 
-    // Simular diferente cantidad según comuna
     if (comuna.toLowerCase().contains('quilicura')) {
       return baseRanking;
     } else if (comuna.toLowerCase().contains('santiago')) {
@@ -89,15 +44,6 @@ class MapsRepositoryReal implements MapsRepository {
   MapsRepositoryReal(this._supabase);
 
   @override
-  Future<List<Cancha>> fetchCanchas({
-    required String region,
-    required String comuna,
-  }) async {
-    // Aún no hay canchas cargadas en BD para este flujo.
-    // Devolvemos lista vacía (estado vacío en UI), sin datos falsos.
-    return const <Cancha>[];
-  }
-
   @override
   Future<List<EquipoRank>> fetchRanking({
     required String region,

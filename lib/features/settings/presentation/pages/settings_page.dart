@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../safety/data/safety_providers.dart';
 import '../../../safety/data/safety_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../shared/ui/app_snack.dart';
+import '../../../../core/theme/theme_prefs.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -10,21 +13,18 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final blockedAsync = ref.watch(blockedUsersProvider);
     final reportsAsync = ref.watch(myReportsProvider);
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        title: const Text(
-          'Configuración',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(title: const Text('Configuración')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _SectionHeader(title: 'Apariencia'),
+          _ThemeSettingsCard(),
+          const SizedBox(height: 16),
+
           const _SectionHeader(title: 'Privacidad'),
           Card(
             elevation: 2,
@@ -66,15 +66,19 @@ class SettingsPage extends ConsumerWidget {
                             leading: CircleAvatar(
                               radius: 22,
                               backgroundImage:
-                                  u['profile_image_url'] != null
+                                  (u['profile_image_url'] != null &&
+                                          (u['profile_image_url'] as String)
+                                              .isNotEmpty)
                                       ? NetworkImage(u['profile_image_url'])
                                       : null,
-                              backgroundColor: const Color(0xFF2E7D32),
+                              backgroundColor: scheme.primary,
                               child:
-                                  u['profile_image_url'] == null
-                                      ? const Icon(
+                                  (u['profile_image_url'] == null ||
+                                          (u['profile_image_url'] as String)
+                                              .isEmpty)
+                                      ? Icon(
                                         Icons.person,
-                                        color: Colors.white,
+                                        color: scheme.onPrimary,
                                       )
                                       : null,
                             ),
@@ -86,7 +90,12 @@ class SettingsPage extends ConsumerWidget {
                             ),
                             subtitle: Text(
                               u['email'] ?? '',
-                              style: const TextStyle(color: Colors.black54),
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                              ),
                             ),
                             trailing: TextButton.icon(
                               onPressed:
@@ -95,13 +104,13 @@ class SettingsPage extends ConsumerWidget {
                                     ref,
                                     u['id'] as String,
                                   ),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.lock_open,
-                                color: Colors.orange,
+                                color: scheme.secondary,
                               ),
-                              label: const Text(
+                              label: Text(
                                 'Desbloquear',
-                                style: TextStyle(color: Colors.orange),
+                                style: TextStyle(color: scheme.secondary),
                               ),
                             ),
                           );
@@ -120,7 +129,9 @@ class SettingsPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(8),
                           child: Text(
                             'Error: $e',
-                            style: const TextStyle(color: Colors.red),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                           ),
                         ),
                   ),
@@ -176,17 +187,23 @@ class SettingsPage extends ConsumerWidget {
                             leading: CircleAvatar(
                               radius: 22,
                               backgroundImage:
-                                  r['reported_profile_image_url'] != null
+                                  (r['reported_profile_image_url'] != null &&
+                                          (r['reported_profile_image_url']
+                                                  as String)
+                                              .isNotEmpty)
                                       ? NetworkImage(
                                         r['reported_profile_image_url'],
                                       )
                                       : null,
-                              backgroundColor: Colors.orange,
+                              backgroundColor: scheme.tertiary,
                               child:
-                                  r['reported_profile_image_url'] == null
-                                      ? const Icon(
+                                  (r['reported_profile_image_url'] == null ||
+                                          (r['reported_profile_image_url']
+                                                  as String)
+                                              .isEmpty)
+                                      ? Icon(
                                         Icons.report,
-                                        color: Colors.white,
+                                        color: scheme.onTertiary,
                                       )
                                       : null,
                             ),
@@ -202,8 +219,11 @@ class SettingsPage extends ConsumerWidget {
                                 if (email.isNotEmpty)
                                   Text(
                                     email,
-                                    style: const TextStyle(
-                                      color: Colors.black54,
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 const SizedBox(height: 4),
@@ -211,13 +231,19 @@ class SettingsPage extends ConsumerWidget {
                                   details.length > 120
                                       ? '${details.substring(0, 120)}…'
                                       : details,
-                                  style: const TextStyle(color: Colors.black87),
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   createdAt,
-                                  style: const TextStyle(
-                                    color: Colors.black45,
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.onSurfaceVariant,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -239,7 +265,9 @@ class SettingsPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(8),
                           child: Text(
                             'Error: $e',
-                            style: const TextStyle(color: Colors.red),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                           ),
                         ),
                   ),
@@ -282,16 +310,9 @@ class SettingsPage extends ConsumerWidget {
       try {
         await ref.read(safetyServiceProvider).unblockUser(userId);
         ref.invalidate(blockedUsersProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Usuario desbloqueado'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        if (context.mounted) AppSnack.success(context, 'Usuario desbloqueado');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
+        if (context.mounted) AppSnack.error(context, 'Error: $e');
       }
     }
   }
@@ -300,15 +321,15 @@ class SettingsPage extends ConsumerWidget {
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
-          color: Colors.black54,
-          fontWeight: FontWeight.w600,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       ),
     );
@@ -331,12 +352,275 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 24),
       child: Column(
         children: [
-          Icon(icon, size: 48, color: Colors.grey),
+          Icon(
+            icon,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 8),
           Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: Colors.black54)),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+/// Theme settings card moved from Profile to Settings
+class _ThemeSettingsCard extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_ThemeSettingsCard> createState() => _ThemeSettingsCardState();
+}
+
+class _ThemeSettingsCardState extends ConsumerState<_ThemeSettingsCard> {
+  late String _themeMode;
+  late String _seedHex;
+  late String _accentHex;
+  late String _style;
+
+  @override
+  void initState() {
+    super.initState();
+    final prefs = ThemePrefs.defaults();
+    _themeMode = prefs.mode;
+    _seedHex = prefs.seedHex;
+    _accentHex = prefs.accentHex;
+    _style = prefs.style;
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final uid = supabase.auth.currentUser?.id;
+      if (uid == null) return;
+      final row =
+          await supabase
+              .from('profiles')
+              .select('theme_prefs')
+              .eq('id', uid)
+              .maybeSingle();
+      final prefs = ThemePrefs.fromMap(
+        (row?['theme_prefs'] as Map?)?.cast<String, dynamic>(),
+      );
+      setState(() {
+        _themeMode = prefs.mode;
+        _seedHex = prefs.seedHex;
+        _accentHex = prefs.accentHex;
+        _style = prefs.style;
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _save({
+    String? mode,
+    String? seed,
+    String? accent,
+    String? style,
+  }) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final uid = supabase.auth.currentUser?.id;
+      if (uid == null) return;
+      setState(() {
+        if (mode != null) _themeMode = mode;
+        if (seed != null) _seedHex = seed;
+        if (accent != null) _accentHex = accent;
+        if (style != null) _style = style;
+      });
+      final prefs = {
+        'seed': _seedHex,
+        'accent': _accentHex,
+        'mode': _themeMode,
+        'style': _style,
+      };
+      await supabase
+          .from('profiles')
+          .update({'theme_prefs': prefs})
+          .eq('id', uid);
+      if (mounted) AppSnack.success(context, 'Tema actualizado');
+    } catch (e) {
+      if (mounted) AppSnack.error(context, 'Error al guardar: $e');
+    }
+  }
+
+  Widget _radio(String value, String label, IconData icon) {
+    final scheme = Theme.of(context).colorScheme;
+    return RadioListTile<String>(
+      value: value,
+      groupValue: _themeMode,
+      onChanged: (v) => v == null ? null : _save(mode: v),
+      title: Row(
+        children: [
+          Icon(icon, color: scheme.primary),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+      dense: true,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final palettes = [
+      {'name': 'Quilicura', 'seed': '#2E7D32', 'accent': '#FF6F00'},
+      {'name': 'Bosque', 'seed': '#1B5E20', 'accent': '#66BB6A'},
+      {'name': 'Océano', 'seed': '#0D47A1', 'accent': '#00ACC1'},
+      {'name': 'Noche', 'seed': '#212121', 'accent': '#FFAB00'},
+      {'name': 'AMOLED', 'seed': '#000000', 'accent': '#00E5FF'},
+      {'name': 'Fuego', 'seed': '#BF360C', 'accent': '#FFC107'},
+    ];
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: scheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.palette, color: scheme.primary),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Tema de la app',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final p in palettes)
+                  _PaletteCard(
+                    name: p['name']!,
+                    seedHex: p['seed']!,
+                    accentHex: p['accent']!,
+                    selected:
+                        _seedHex == p['seed']! && _accentHex == p['accent']!,
+                    onTap: () => _save(seed: p['seed']!, accent: p['accent']!),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _radio('system', 'Seguir el sistema', Icons.settings_suggest),
+            _radio('light', 'Claro', Icons.light_mode),
+            _radio('dark', 'Oscuro', Icons.dark_mode),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaletteCard extends StatelessWidget {
+  final String name;
+  final String seedHex;
+  final String accentHex;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PaletteCard({
+    required this.name,
+    required this.seedHex,
+    required this.accentHex,
+    required this.selected,
+    required this.onTap,
+  });
+
+  Color _hex(String hex) {
+    final clean = hex.replaceAll('#', '');
+    final full = clean.length == 6 ? 'FF$clean' : clean;
+    return Color(int.parse(full, radix: 16));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final seed = _hex(seedHex);
+    final accent = _hex(accentHex);
+    final scheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? seed : scheme.outlineVariant,
+            width: selected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: seed,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Container(
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '#${seedHex.replaceAll('#', '').toUpperCase()} · #${accentHex.replaceAll('#', '').toUpperCase()}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

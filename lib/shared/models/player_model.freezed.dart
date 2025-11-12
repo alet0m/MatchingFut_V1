@@ -28,7 +28,10 @@ mixin _$PlayerModel {
   String? get email => throw _privateConstructorUsedError;
   String? get position =>
       throw _privateConstructorUsedError; // Portero, Defensa, Mediocampo, Delantero
-  int get elo => throw _privateConstructorUsedError;
+  int get elo =>
+      throw _privateConstructorUsedError; // Liga basada en puntos (nuevo ranking principal)
+  int get leaguePoints => throw _privateConstructorUsedError;
+  String? get leagueTier => throw _privateConstructorUsedError;
   int get goalsScored => throw _privateConstructorUsedError;
   int get assists => throw _privateConstructorUsedError;
   int get yellowCards => throw _privateConstructorUsedError;
@@ -63,6 +66,8 @@ abstract class $PlayerModelCopyWith<$Res> {
     String? email,
     String? position,
     int elo,
+    int leaguePoints,
+    String? leagueTier,
     int goalsScored,
     int assists,
     int yellowCards,
@@ -96,6 +101,8 @@ class _$PlayerModelCopyWithImpl<$Res, $Val extends PlayerModel>
     Object? email = freezed,
     Object? position = freezed,
     Object? elo = null,
+    Object? leaguePoints = null,
+    Object? leagueTier = freezed,
     Object? goalsScored = null,
     Object? assists = null,
     Object? yellowCards = null,
@@ -142,6 +149,16 @@ class _$PlayerModelCopyWithImpl<$Res, $Val extends PlayerModel>
                     ? _value.elo
                     : elo // ignore: cast_nullable_to_non_nullable
                         as int,
+            leaguePoints:
+                null == leaguePoints
+                    ? _value.leaguePoints
+                    : leaguePoints // ignore: cast_nullable_to_non_nullable
+                        as int,
+            leagueTier:
+                freezed == leagueTier
+                    ? _value.leagueTier
+                    : leagueTier // ignore: cast_nullable_to_non_nullable
+                        as String?,
             goalsScored:
                 null == goalsScored
                     ? _value.goalsScored
@@ -205,6 +222,8 @@ abstract class _$$PlayerModelImplCopyWith<$Res>
     String? email,
     String? position,
     int elo,
+    int leaguePoints,
+    String? leagueTier,
     int goalsScored,
     int assists,
     int yellowCards,
@@ -237,6 +256,8 @@ class __$$PlayerModelImplCopyWithImpl<$Res>
     Object? email = freezed,
     Object? position = freezed,
     Object? elo = null,
+    Object? leaguePoints = null,
+    Object? leagueTier = freezed,
     Object? goalsScored = null,
     Object? assists = null,
     Object? yellowCards = null,
@@ -283,6 +304,16 @@ class __$$PlayerModelImplCopyWithImpl<$Res>
                 ? _value.elo
                 : elo // ignore: cast_nullable_to_non_nullable
                     as int,
+        leaguePoints:
+            null == leaguePoints
+                ? _value.leaguePoints
+                : leaguePoints // ignore: cast_nullable_to_non_nullable
+                    as int,
+        leagueTier:
+            freezed == leagueTier
+                ? _value.leagueTier
+                : leagueTier // ignore: cast_nullable_to_non_nullable
+                    as String?,
         goalsScored:
             null == goalsScored
                 ? _value.goalsScored
@@ -339,6 +370,8 @@ class _$PlayerModelImpl implements _PlayerModel {
     this.email,
     this.position,
     this.elo = 1200,
+    this.leaguePoints = 100,
+    this.leagueTier,
     this.goalsScored = 0,
     this.assists = 0,
     this.yellowCards = 0,
@@ -368,6 +401,12 @@ class _$PlayerModelImpl implements _PlayerModel {
   @override
   @JsonKey()
   final int elo;
+  // Liga basada en puntos (nuevo ranking principal)
+  @override
+  @JsonKey()
+  final int leaguePoints;
+  @override
+  final String? leagueTier;
   @override
   @JsonKey()
   final int goalsScored;
@@ -393,7 +432,7 @@ class _$PlayerModelImpl implements _PlayerModel {
 
   @override
   String toString() {
-    return 'PlayerModel(id: $id, userId: $userId, teamId: $teamId, name: $name, email: $email, position: $position, elo: $elo, goalsScored: $goalsScored, assists: $assists, yellowCards: $yellowCards, redCards: $redCards, isActive: $isActive, isCaptain: $isCaptain, joinedAt: $joinedAt, createdAt: $createdAt)';
+    return 'PlayerModel(id: $id, userId: $userId, teamId: $teamId, name: $name, email: $email, position: $position, elo: $elo, leaguePoints: $leaguePoints, leagueTier: $leagueTier, goalsScored: $goalsScored, assists: $assists, yellowCards: $yellowCards, redCards: $redCards, isActive: $isActive, isCaptain: $isCaptain, joinedAt: $joinedAt, createdAt: $createdAt)';
   }
 
   @override
@@ -409,6 +448,10 @@ class _$PlayerModelImpl implements _PlayerModel {
             (identical(other.position, position) ||
                 other.position == position) &&
             (identical(other.elo, elo) || other.elo == elo) &&
+            (identical(other.leaguePoints, leaguePoints) ||
+                other.leaguePoints == leaguePoints) &&
+            (identical(other.leagueTier, leagueTier) ||
+                other.leagueTier == leagueTier) &&
             (identical(other.goalsScored, goalsScored) ||
                 other.goalsScored == goalsScored) &&
             (identical(other.assists, assists) || other.assists == assists) &&
@@ -437,6 +480,8 @@ class _$PlayerModelImpl implements _PlayerModel {
     email,
     position,
     elo,
+    leaguePoints,
+    leagueTier,
     goalsScored,
     assists,
     yellowCards,
@@ -470,6 +515,8 @@ abstract class _PlayerModel implements PlayerModel {
     final String? email,
     final String? position,
     final int elo,
+    final int leaguePoints,
+    final String? leagueTier,
     final int goalsScored,
     final int assists,
     final int yellowCards,
@@ -496,7 +543,11 @@ abstract class _PlayerModel implements PlayerModel {
   @override
   String? get position; // Portero, Defensa, Mediocampo, Delantero
   @override
-  int get elo;
+  int get elo; // Liga basada en puntos (nuevo ranking principal)
+  @override
+  int get leaguePoints;
+  @override
+  String? get leagueTier;
   @override
   int get goalsScored;
   @override

@@ -4,6 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/territorial_map_service.dart';
 import '../../../../shared/models/sector_model.dart';
 
+// NOTE: This widget is currently unused after removing territorial map pages.
+// Keeping it for potential future use; consider deletion if not needed.
 class TerritorialMapWidget extends ConsumerStatefulWidget {
   final String comunaId;
   final Function(SectorModel sector)? onSectorTapped;
@@ -26,7 +28,7 @@ class _TerritorialMapWidgetState extends ConsumerState<TerritorialMapWidget> {
   final Map<String, SectorModel> _sectorsInfo = {};
   String? _selectedSectorId;
   bool _isLoadingSectors = true;
-  bool _isMapReady = false;
+  // bool _isMapReady = false; // unused after feature removal
 
   // Coordenadas por defecto (centro de Santiago)
   final LatLng _defaultLocation = const LatLng(-33.4489, -70.6693);
@@ -80,19 +82,19 @@ class _TerritorialMapWidgetState extends ConsumerState<TerritorialMapWidget> {
     }
   }
 
-  void _handleSectorTap(String sectorId) {
-    if (_sectorsInfo.containsKey(sectorId)) {
-      setState(() {
-        _selectedSectorId = sectorId;
-      });
-
-      if (widget.onSectorTapped != null) {
-        widget.onSectorTapped!(_sectorsInfo[sectorId]!);
-      }
-
-      _centerMapOnSector(sectorId);
-    }
-  }
+  // void _handleSectorTap(String sectorId) {
+  //   if (_sectorsInfo.containsKey(sectorId)) {
+  //     setState(() {
+  //       _selectedSectorId = sectorId;
+  //     });
+  //
+  //     if (widget.onSectorTapped != null) {
+  //       widget.onSectorTapped!(_sectorsInfo[sectorId]!);
+  //     }
+  //
+  //     _centerMapOnSector(sectorId);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +118,7 @@ class _TerritorialMapWidgetState extends ConsumerState<TerritorialMapWidget> {
               onMapCreated: (controller) {
                 setState(() {
                   _mapController = controller;
-                  _isMapReady = true;
+                  // _isMapReady = true;
                 });
 
                 if (_selectedSectorId != null) {

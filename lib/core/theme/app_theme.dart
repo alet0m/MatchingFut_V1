@@ -89,45 +89,48 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.disabled)) {
-              return scheme.onSurface.withOpacity(0.12);
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return scheme.onSurface.withValues(alpha: 0.12);
             }
             return scheme.primary;
           }),
-          foregroundColor: MaterialStateProperty.all(scheme.onPrimary),
-          padding: MaterialStateProperty.all(
+          foregroundColor: WidgetStateProperty.all(scheme.onPrimary),
+          padding: WidgetStateProperty.all(
             const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
-          elevation: MaterialStateProperty.all(2),
-          shape: MaterialStateProperty.all(
+          elevation: WidgetStateProperty.all(2),
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          textStyle: MaterialStateProperty.all(
+          textStyle: WidgetStateProperty.all(
             const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.all(scheme.primary),
-          textStyle: MaterialStateProperty.all(
+          foregroundColor: WidgetStateProperty.all(scheme.primary),
+          textStyle: WidgetStateProperty.all(
             const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: ButtonStyle(
-          side: MaterialStateProperty.all(BorderSide(color: scheme.outline)),
-          foregroundColor: MaterialStateProperty.all(scheme.primary),
-          shape: MaterialStateProperty.all(
+          side: WidgetStateProperty.all(BorderSide(color: scheme.outline)),
+          foregroundColor: WidgetStateProperty.all(scheme.primary),
+          shape: WidgetStateProperty.all(
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: !isDark,
-        fillColor: isDark ? null : scheme.surfaceVariant.withOpacity(0.5),
+        fillColor:
+            isDark
+                ? null
+                : scheme.surfaceContainerHighest.withValues(alpha: 0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: scheme.outlineVariant),
@@ -141,7 +144,9 @@ class AppTheme {
           borderSide: BorderSide(color: scheme.primary, width: 2),
         ),
         labelStyle: TextStyle(color: scheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: scheme.onSurfaceVariant.withOpacity(0.7)),
+        hintStyle: TextStyle(
+          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+        ),
       ),
       cardTheme: CardTheme(
         elevation: 2,
@@ -154,9 +159,9 @@ class AppTheme {
                 : scheme.surface,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: scheme.surfaceVariant,
+        backgroundColor: scheme.surfaceContainerHighest,
         selectedColor: scheme.secondaryContainer,
-        disabledColor: scheme.onSurface.withOpacity(0.12),
+        disabledColor: scheme.onSurface.withValues(alpha: 0.12),
         labelStyle: textTheme.labelLarge?.copyWith(color: scheme.onSurface),
         secondaryLabelStyle: textTheme.labelLarge?.copyWith(
           color: scheme.onSecondaryContainer,
@@ -185,27 +190,25 @@ class AppTheme {
         elevation: 3,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith(
-          (states) => scheme.primary,
-        ),
-        trackColor: MaterialStateProperty.resolveWith(
+        thumbColor: WidgetStateProperty.resolveWith((states) => scheme.primary),
+        trackColor: WidgetStateProperty.resolveWith(
           (states) =>
-              states.contains(MaterialState.selected)
-                  ? scheme.primary.withOpacity(0.5)
-                  : scheme.outlineVariant.withOpacity(0.4),
+              states.contains(WidgetState.selected)
+                  ? scheme.primary.withValues(alpha: 0.5)
+                  : scheme.outlineVariant.withValues(alpha: 0.4),
         ),
       ),
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.all(scheme.primary),
+        fillColor: WidgetStateProperty.all(scheme.primary),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.all(scheme.primary),
+        fillColor: WidgetStateProperty.all(scheme.primary),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: scheme.primary,
-        inactiveTrackColor: scheme.primary.withOpacity(0.24),
+        inactiveTrackColor: scheme.primary.withValues(alpha: 0.24),
         thumbColor: scheme.primary,
-        overlayColor: scheme.primary.withOpacity(0.12),
+        overlayColor: scheme.primary.withValues(alpha: 0.12),
         valueIndicatorTextStyle: textTheme.labelSmall?.copyWith(
           color: scheme.onPrimary,
         ),

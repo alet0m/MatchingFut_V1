@@ -54,10 +54,10 @@ class _InvitationsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.group_add, color: Color(0xFF2E7D32)),
-            SizedBox(width: 8),
-            Text(
+          children: [
+            Icon(Icons.group_add, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 8),
+            const Text(
               'Invitaciones a equipo',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
@@ -108,10 +108,13 @@ class _FriendRequestsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.person_add_alt_1, color: Color(0xFF2E7D32)),
-            SizedBox(width: 8),
-            Text(
+          children: [
+            Icon(
+              Icons.person_add_alt_1,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Text(
               'Solicitudes de amistad',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
@@ -177,9 +180,12 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  backgroundColor: Color(0xFF2E7D32),
-                  child: Icon(Icons.groups, color: Colors.white),
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: Icon(
+                    Icons.groups,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -229,8 +235,8 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -261,14 +267,20 @@ class _InvitationCardState extends ConsumerState<_InvitationCard> {
             content: Text(
               accept ? '¡Invitación aceptada!' : 'Invitación rechazada',
             ),
-            backgroundColor: accept ? Colors.green : Colors.orange,
+            backgroundColor:
+                accept
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.tertiary,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } finally {
@@ -304,13 +316,14 @@ class _FriendRequestCardState extends ConsumerState<_FriendRequestCard> {
               children: [
                 CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   backgroundImage:
-                      u.profileImageUrl != null
+                      (u.profileImageUrl != null &&
+                              u.profileImageUrl!.isNotEmpty)
                           ? NetworkImage(u.profileImageUrl!)
                           : null,
                   child:
-                      u.profileImageUrl == null
+                      (u.profileImageUrl == null || u.profileImageUrl!.isEmpty)
                           ? Text(
                             (u.fullName.isNotEmpty ? u.fullName[0] : '?')
                                 .toUpperCase(),
@@ -360,8 +373,8 @@ class _FriendRequestCardState extends ConsumerState<_FriendRequestCard> {
                     icon: const Icon(Icons.check),
                     label: const Text('Aceptar'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
-                      foregroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),
@@ -387,14 +400,20 @@ class _FriendRequestCardState extends ConsumerState<_FriendRequestCard> {
                   ? '¡Solicitud aceptada! Ya son amigos'
                   : 'Solicitud rechazada',
             ),
-            backgroundColor: accept ? Colors.green : Colors.orange,
+            backgroundColor:
+                accept
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.secondary,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
       }
     } finally {
@@ -423,7 +442,7 @@ class _EmptyBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -432,14 +451,23 @@ class _EmptyBox extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 42, color: Colors.grey),
+          Icon(
+            icon,
+            size: 42,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: Colors.grey)),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -458,10 +486,13 @@ class _TeamChatsSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          children: const [
-            Icon(Icons.chat_bubble, color: Color(0xFF2E7D32)),
-            SizedBox(width: 8),
-            Text(
+          children: [
+            Icon(
+              Icons.chat_bubble,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 8),
+            const Text(
               'Chats de equipos',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
@@ -580,9 +611,12 @@ class _TeamChatRow extends StatelessWidget {
         leading: Stack(
           clipBehavior: Clip.none,
           children: [
-            const CircleAvatar(
-              backgroundColor: Color(0xFF2E7D32),
-              child: Icon(Icons.groups, color: Colors.white),
+            CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: Icon(
+                Icons.groups,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
             Positioned(
               right: -6,
@@ -590,7 +624,7 @@ class _TeamChatRow extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6F00),
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(

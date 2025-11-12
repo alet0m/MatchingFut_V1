@@ -5,11 +5,12 @@ class PlayerProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi Perfil de Jugador'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
       ),
       body: const Center(
         child: Padding(

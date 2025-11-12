@@ -8,11 +8,12 @@ class RecruitmentDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalles de Publicación'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -22,10 +23,10 @@ class RecruitmentDetailsPage extends StatelessWidget {
             // Título
             Text(
               post.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
 
@@ -37,8 +38,8 @@ class RecruitmentDetailsPage extends StatelessWidget {
               decoration: BoxDecoration(
                 color:
                     post.isTeamPost
-                        ? Colors.blue.shade100
-                        : Colors.green.shade100,
+                        ? Theme.of(context).colorScheme.secondaryContainer
+                        : Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -50,8 +51,8 @@ class RecruitmentDetailsPage extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                   color:
                       post.isTeamPost
-                          ? Colors.blue.shade700
-                          : Colors.green.shade700,
+                          ? Theme.of(context).colorScheme.onSecondaryContainer
+                          : Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
               ),
             ),
@@ -59,12 +60,12 @@ class RecruitmentDetailsPage extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Descripción
-            const Text(
+            Text(
               'Descripción',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
 
@@ -72,22 +73,22 @@ class RecruitmentDetailsPage extends StatelessWidget {
 
             Text(
               post.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 height: 1.5,
-                color: Color(0xFF666666),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
 
             const SizedBox(height: 24),
 
             // Información específica
-            _buildInfoSection(),
+            _buildInfoSection(context),
 
             const SizedBox(height: 24),
 
             // Ubicación
-            _buildLocationSection(),
+            _buildLocationSection(context),
 
             const SizedBox(height: 32),
 
@@ -99,22 +100,22 @@ class RecruitmentDetailsPage extends StatelessWidget {
                 onPressed: () {
                   // TODO: Implementar aplicación
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Funcionalidad en desarrollo'),
-                      backgroundColor: Color(0xFF2E7D32),
+                    SnackBar(
+                      content: const Text('Funcionalidad en desarrollo'),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: Text(
                   post.isTeamPost ? 'Aplicar al Equipo' : 'Contactar Jugador',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -127,7 +128,7 @@ class RecruitmentDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -144,12 +145,12 @@ class RecruitmentDetailsPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Información',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -189,7 +190,7 @@ class RecruitmentDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSection() {
+  Widget _buildLocationSection(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -209,27 +210,35 @@ class RecruitmentDetailsPage extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.location_on, color: Color(0xFF2E7D32)),
+            child: Icon(
+              Icons.location_on,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Ubicación',
-                  style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   post.comuna,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ],

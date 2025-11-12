@@ -18,7 +18,7 @@ class LoadingWidget extends StatelessWidget {
                 height: 80,
                 decoration: BoxDecoration(
                   color: (color ?? Theme.of(context).colorScheme.primary)
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -77,7 +77,7 @@ class CustomErrorWidget extends StatelessWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: (color ?? Colors.red).withOpacity(0.1),
+                color: (color ?? Colors.red).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

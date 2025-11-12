@@ -5,6 +5,8 @@ import '../../data/matches_service.dart';
 import '../../../teams/data/teams_service.dart';
 import '../../../teams/data/players_service.dart';
 import '../../../../shared/models/team_model.dart';
+import '../../../public_matches/presentation/providers/public_matches_providers.dart';
+import '../../../../shared/models/comuna_model.dart';
 
 class CreatePublicMatchPage extends ConsumerStatefulWidget {
   const CreatePublicMatchPage({super.key});
@@ -23,23 +25,11 @@ class _CreatePublicMatchPageState extends ConsumerState<CreatePublicMatchPage> {
   TeamModel? _selectedHomeTeam;
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-  String? _selectedComuna;
+  String? _selectedComunaId;
+  String? _selectedComunaName;
   int? _minEloRange;
   int? _maxEloRange;
   bool _isLoading = false;
-
-  final List<String> _comunas = [
-    'Quilicura',
-    'Las Condes',
-    'Providencia',
-    'Santiago Centro',
-    'Ñuñoa',
-    'La Florida',
-    'Maipú',
-    'Puente Alto',
-    'San Miguel',
-    'Independencia',
-  ];
 
   @override
   void dispose() {
@@ -407,27 +397,53 @@ class _CreatePublicMatchPageState extends ConsumerState<CreatePublicMatchPage> {
       ),
       child: Column(
         children: [
-          DropdownButtonFormField<String>(
-            value: _selectedComuna,
-            decoration: const InputDecoration(
-              labelText: 'Comuna',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.location_on),
-            ),
-            items:
-                _comunas.map((comuna) {
-                  return DropdownMenuItem(value: comuna, child: Text(comuna));
-                }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedComuna = value;
-              });
-            },
-            validator: (value) {
-              if (value == null) {
-                return 'Por favor selecciona una comuna';
-              }
-              return null;
+          Consumer(
+            builder: (context, ref, _) {
+              final comunasAsync = ref.watch(comunasListProvider);
+              return comunasAsync.when(
+                data: (List<ComunaModel> comunas) {
+                  comunas.sort((a, b) => a.name.compareTo(b.name));
+                  return DropdownButtonFormField<String>(
+                    value: _selectedComunaId,
+                    decoration: const InputDecoration(
+                      labelText: 'Comuna',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.location_on),
+                    ),
+                    items:
+                        comunas
+                            .map(
+                              (c) => DropdownMenuItem<String>(
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedComunaId = value;
+                        final found = comunas.firstWhere(
+                          (c) => c.id == value,
+                          orElse: () => comunas.first,
+                        );
+                        _selectedComunaName = found.name;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null) {
+                        return 'Por favor selecciona una comuna';
+                      }
+                      return null;
+                    },
+                  );
+                },
+                loading:
+                    () => const SizedBox(
+                      height: 56,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                error: (e, st) => Text('Error cargando comunas: $e'),
+              );
             },
           ),
 
@@ -558,7 +574,7 @@ class _CreatePublicMatchPageState extends ConsumerState<CreatePublicMatchPage> {
         title: _titleController.text,
         description: _descriptionController.text,
         matchDate: matchDate,
-        comuna: _selectedComuna!,
+        comunaId: _selectedComunaId!,
         location:
             _locationController.text.isNotEmpty
                 ? _locationController.text

@@ -85,7 +85,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(
@@ -115,7 +115,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -129,7 +129,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.1),
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
@@ -167,7 +167,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -342,7 +342,9 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                                         Icons.location_city,
                                         color:
                                             comuna['enabled']
-                                                ? const Color(0xFF2E7D32)
+                                                ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
                                                 : Colors.grey,
                                         size: 20,
                                       ),
@@ -397,7 +399,7 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.1),
+                        ).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -430,12 +432,12 @@ class _CreateTeamPageState extends ConsumerState<CreateTeamPage> {
                       decoration: BoxDecoration(
                         color: Theme.of(
                           context,
-                        ).colorScheme.primary.withOpacity(0.05),
+                        ).colorScheme.primary.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.2),
+                          ).colorScheme.primary.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(

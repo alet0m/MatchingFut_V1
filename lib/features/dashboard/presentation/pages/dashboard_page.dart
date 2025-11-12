@@ -28,7 +28,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -42,7 +42,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
             _selectedIndex = index;
           });
         },
-        selectedItemColor: const Color(0xFF2E7D32),
+        selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
         items: const [
@@ -65,7 +65,7 @@ class _HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF8F9FA),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -78,10 +78,9 @@ class _HomePage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // Tarjeta de estadísticas principales
-              _buildStatsCard().animate().fadeIn(
-                duration: 800.ms,
-                delay: 200.ms,
-              ),
+              _buildStatsCard(
+                context,
+              ).animate().fadeIn(duration: 800.ms, delay: 200.ms),
 
               const SizedBox(height: 30),
 
@@ -93,18 +92,16 @@ class _HomePage extends StatelessWidget {
               const SizedBox(height: 30),
 
               // Próximos partidos
-              _buildUpcomingMatches().animate().fadeIn(
-                duration: 800.ms,
-                delay: 600.ms,
-              ),
+              _buildUpcomingMatches(
+                context,
+              ).animate().fadeIn(duration: 800.ms, delay: 600.ms),
 
               const SizedBox(height: 30),
 
               // Actividad reciente
-              _buildRecentActivity().animate().fadeIn(
-                duration: 800.ms,
-                delay: 800.ms,
-              ),
+              _buildRecentActivity(
+                context,
+              ).animate().fadeIn(duration: 800.ms, delay: 800.ms),
             ],
           ),
         ),
@@ -140,19 +137,20 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsCard() {
+  Widget _buildStatsCard(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2E7D32), Color(0xFF1B5E20)],
+        gradient: LinearGradient(
+          colors: [scheme.primary, scheme.primary.withValues(alpha: 0.85)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.3),
+            color: scheme.primary.withValues(alpha: 0.30),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -163,10 +161,10 @@ class _HomePage extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Estado del Jugador',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -177,13 +175,13 @@ class _HomePage extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: scheme.onPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
+                child: Text(
                   'Nuevo',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: scheme.onPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -193,10 +191,10 @@ class _HomePage extends StatelessWidget {
           const SizedBox(height: 20),
           Row(
             children: [
-              const Text(
+              Text(
                 'Sin ranking',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: scheme.onPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -205,13 +203,13 @@ class _HomePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: scheme.onPrimary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
+                child: Text(
                   'NOVATO',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: scheme.onPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -222,11 +220,18 @@ class _HomePage extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Icon(Icons.info_outline, color: Colors.white70, size: 16),
+              Icon(
+                Icons.info_outline,
+                color: scheme.onPrimary.withValues(alpha: 0.7),
+                size: 16,
+              ),
               const SizedBox(width: 4),
-              const Text(
+              Text(
                 'Juega tu primer partido para obtener ranking',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(
+                  color: scheme.onPrimary.withValues(alpha: 0.7),
+                  fontSize: 14,
+                ),
               ),
             ],
           ),
@@ -239,13 +244,11 @@ class _HomePage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Acciones Rápidas',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Row(
@@ -254,9 +257,9 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.add_circle,
                 title: 'Crear\nPartido',
-                color: const Color(0xFFFF6F00),
+                color: Theme.of(context).colorScheme.secondary,
                 onTap: () {
-                  context.go('/matches/create');
+                  context.go('/create-public-match');
                 },
               ),
             ),
@@ -265,7 +268,7 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.search,
                 title: 'Buscar\nPartido',
-                color: const Color(0xFF2E7D32),
+                color: Theme.of(context).colorScheme.primary,
                 onTap: () => context.go('/matches'),
               ),
             ),
@@ -274,7 +277,7 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.group_add,
                 title: 'Mis\nEquipos',
-                color: const Color(0xFF1976D2),
+                color: Theme.of(context).colorScheme.tertiary,
                 onTap: () => context.go('/teams'),
               ),
             ),
@@ -288,8 +291,8 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.my_location,
                 title: 'Partidos\nCercanos',
-                color: const Color(0xFF9C27B0),
-                onTap: () => context.push('/radial-search'),
+                color: Theme.of(context).colorScheme.tertiaryContainer,
+                onTap: () => context.push('/explore'),
               ),
             ),
             const SizedBox(width: 15),
@@ -297,12 +300,13 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.sports_mma,
                 title: 'Desafíos\nRápidos',
-                color: const Color(0xFFE91E63),
+                color: Theme.of(context).colorScheme.error,
                 onTap: () {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Crea un equipo para acceder a desafíos'),
-                      backgroundColor: Color(0xFF2E7D32),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                   );
                 },
@@ -313,12 +317,13 @@ class _HomePage extends StatelessWidget {
               child: _buildActionCard(
                 icon: Icons.emoji_events,
                 title: 'Ranking\nELO',
-                color: const Color(0xFFFF9800),
+                color: Theme.of(context).colorScheme.secondaryContainer,
                 onTap: () {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text('Ranking próximamente'),
-                      backgroundColor: Color(0xFF2E7D32),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
                     ),
                   );
                 },
@@ -345,7 +350,7 @@ class _HomePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -357,7 +362,7 @@ class _HomePage extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 28),
@@ -378,32 +383,28 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildUpcomingMatches() {
+  Widget _buildUpcomingMatches(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Próximos Partidos',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             TextButton(
-              onPressed: () {},
-              child: const Text(
-                'Crear partido',
-                style: TextStyle(color: Color(0xFF2E7D32)),
-              ),
+              onPressed: () => context.go('/create-public-match'),
+              child: const Text('Crear partido'),
             ),
           ],
         ),
         const SizedBox(height: 16),
         _buildEmptyState(
+          context,
           icon: Icons.sports_soccer_outlined,
           title: 'No tienes partidos programados',
           subtitle: 'Crea tu primer partido o únete a uno existente',
@@ -414,20 +415,19 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentActivity() {
+  Widget _buildRecentActivity(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Actividad Reciente',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         _buildEmptyState(
+          context,
           icon: Icons.timeline_outlined,
           title: 'Aún no tienes actividad',
           subtitle: 'Juega partidos y forma equipos para ver tu actividad',
@@ -438,7 +438,8 @@ class _HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState({
+  Widget _buildEmptyState(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -448,27 +449,32 @@ class _HomePage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 48, color: Colors.grey[400]),
+          Icon(
+            icon,
+            size: 48,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
@@ -477,8 +483,6 @@ class _HomePage extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onAction,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -509,21 +513,18 @@ class _MapsView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.map, size: 100, color: Color(0xFF2E7D32)),
+            Icon(Icons.map, size: 100),
             SizedBox(height: 20),
             Text(
               'Mapa Territorial',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
+                // color handled by theme
               ),
             ),
             SizedBox(height: 10),
-            Text(
-              'Próximamente disponible',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
+            Text('Próximamente disponible', style: TextStyle(fontSize: 16)),
           ],
         ),
       ),

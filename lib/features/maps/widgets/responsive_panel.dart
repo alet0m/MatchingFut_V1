@@ -22,10 +22,9 @@ class ResponsivePanel extends StatefulWidget {
 }
 
 class _ResponsivePanelState extends State<ResponsivePanel> {
-  late Future<List<Cancha>> _canchasF;
+  // Eliminamos canchas: sólo ranking
   late Future<List<EquipoRank>> _rankingF;
   RealtimeChannel? _teamsChannel;
-  int _currentTab = 1; // 0: Canchas, 1: Ranking (priorizar Ranking por defecto)
 
   @override
   void didUpdateWidget(covariant ResponsivePanel oldWidget) {
@@ -44,10 +43,6 @@ class _ResponsivePanelState extends State<ResponsivePanel> {
   }
 
   void _load() {
-    _canchasF = widget.repo.fetchCanchas(
-      region: widget.region,
-      comuna: widget.comuna,
-    );
     _rankingF = widget.repo.fetchRanking(
       region: widget.region,
       comuna: widget.comuna,
@@ -92,177 +87,12 @@ class _ResponsivePanelState extends State<ResponsivePanel> {
 
     final child =
         isWide
-            ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(flex: 1, child: _CanchasCard(future: _canchasF)),
-                const SizedBox(width: 16),
-                Expanded(
-                  flex: 2,
-                  child: _RankingCard(
-                    future: _rankingF,
-                    comunaName: widget.comuna,
-                  ),
-                ),
-              ],
-            )
-            : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Conmutador simple para no apilar dos tarjetas en pantallas pequeñas
-                ToggleButtons(
-                  isSelected: [_currentTab == 0, _currentTab == 1],
-                  onPressed: (index) => setState(() => _currentTab = index),
-                  borderRadius: BorderRadius.circular(8),
-                  selectedColor: Colors.white,
-                  fillColor: const Color(0xFF2E7D32),
-                  color: Colors.black87,
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Text('Canchas'),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      child: Text('Ranking'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (_currentTab == 0)
-                  _CanchasCard(future: _canchasF)
-                else
-                  _RankingCard(future: _rankingF, comunaName: widget.comuna),
-              ],
-            );
+            ? _RankingCard(future: _rankingF, comunaName: widget.comuna)
+            : _RankingCard(future: _rankingF, comunaName: widget.comuna);
 
     // En pantallas pequeñas o cuando el espacio vertical es limitado, permitir scroll
     return SingleChildScrollView(
       child: Padding(padding: const EdgeInsets.all(16), child: child),
-    );
-  }
-}
-
-/// Card que muestra grid de canchas con imágenes placeholder
-class _CanchasCard extends StatelessWidget {
-  final Future<List<Cancha>> future;
-
-  const _CanchasCard({required this.future});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: FutureBuilder<List<Cancha>>(
-          future: future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const SizedBox(
-                height: 180,
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-
-            if (snapshot.hasError) {
-              return _Error(message: 'No se pudieron cargar las canchas.');
-            }
-
-            final data = snapshot.data ?? const <Cancha>[];
-            if (data.isEmpty) {
-              return const SizedBox(
-                height: 120,
-                child: Center(
-                  child: Text(
-                    'Sin canchas para esta comuna.',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              );
-            }
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Canchas',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: data.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisExtent: 140,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                  ),
-                  itemBuilder: (context, index) {
-                    final cancha = data[index];
-                    final url = cancha.fotoUrl ?? ''; // ← evita null
-
-                    return Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.black12),
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child:
-                                url.isNotEmpty
-                                    ? ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(
-                                        top: Radius.circular(8),
-                                      ),
-                                      child: Image.network(
-                                        url,
-                                        fit: BoxFit.cover,
-                                        width: double.infinity,
-                                        errorBuilder:
-                                            (_, __, ___) => const Center(
-                                              child: Icon(
-                                                Icons.image_not_supported,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                      ),
-                                    )
-                                    : const Center(
-                                      child: Icon(
-                                        Icons.sports_soccer,
-                                        size: 32,
-                                        color: Color(0xFF2E7D32),
-                                      ),
-                                    ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(
-                              cancha.nombre,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
-        ),
-      ),
     );
   }
 }
@@ -323,28 +153,38 @@ class _RankingCard extends StatelessWidget {
                   separatorBuilder: (_, __) => const Divider(height: 8),
                   itemBuilder: (context, index) {
                     final equipo = visible[index];
+                    final isFirst = index == 0;
                     return ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        backgroundColor: _getRankColor(index),
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                      leading:
+                          isFirst
+                              ? CircleAvatar(
+                                backgroundColor: Colors.amber,
+                                child: const Icon(
+                                  Icons.emoji_events,
+                                  color: Colors.white,
+                                ),
+                              )
+                              : CircleAvatar(
+                                backgroundColor: _getRankColor(context, index),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                       title: Text(
                         equipo.nombre,
                         style: const TextStyle(fontWeight: FontWeight.w500),
                       ),
                       trailing: Text(
                         '${equipo.puntos} pts',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32),
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     );
@@ -378,7 +218,7 @@ class _RankingCard extends StatelessWidget {
   }
 
   /// Colores para medallas según posición
-  Color _getRankColor(int index) {
+  Color _getRankColor(BuildContext context, int index) {
     switch (index) {
       case 0:
         return Colors.amber; // Oro
@@ -387,7 +227,7 @@ class _RankingCard extends StatelessWidget {
       case 2:
         return Colors.brown; // Bronce
       default:
-        return const Color(0xFF2E7D32); // Verde default
+        return Theme.of(context).colorScheme.primary; // Color del tema
     }
   }
 }
@@ -406,11 +246,15 @@ class _Error extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 32),
+            Icon(
+              Icons.error_outline,
+              color: Theme.of(context).colorScheme.error,
+              size: 32,
+            ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: const TextStyle(color: Colors.red),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ],

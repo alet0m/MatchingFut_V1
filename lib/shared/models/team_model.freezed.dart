@@ -31,6 +31,10 @@ mixin _$TeamModel {
   FootballModality get modality => throw _privateConstructorUsedError;
   int get eloRating =>
       throw _privateConstructorUsedError; // ✅ Coincidir con base de datos (no averageElo)
+  // Puntos de liga acumulados (ranking principal)
+  int get leaguePoints =>
+      throw _privateConstructorUsedError; // Tier/slug de la liga (pichanga, barrio, etc.)
+  String? get leagueTier => throw _privateConstructorUsedError;
   int get totalMatches => throw _privateConstructorUsedError;
   int get wins => throw _privateConstructorUsedError;
   int get losses => throw _privateConstructorUsedError;
@@ -61,6 +65,8 @@ abstract class $TeamModelCopyWith<$Res> {
     String? comunaId,
     FootballModality modality,
     int eloRating,
+    int leaguePoints,
+    String? leagueTier,
     int totalMatches,
     int wins,
     int losses,
@@ -92,6 +98,8 @@ class _$TeamModelCopyWithImpl<$Res, $Val extends TeamModel>
     Object? comunaId = freezed,
     Object? modality = null,
     Object? eloRating = null,
+    Object? leaguePoints = null,
+    Object? leagueTier = freezed,
     Object? totalMatches = null,
     Object? wins = null,
     Object? losses = null,
@@ -140,6 +148,16 @@ class _$TeamModelCopyWithImpl<$Res, $Val extends TeamModel>
                     ? _value.eloRating
                     : eloRating // ignore: cast_nullable_to_non_nullable
                         as int,
+            leaguePoints:
+                null == leaguePoints
+                    ? _value.leaguePoints
+                    : leaguePoints // ignore: cast_nullable_to_non_nullable
+                        as int,
+            leagueTier:
+                freezed == leagueTier
+                    ? _value.leagueTier
+                    : leagueTier // ignore: cast_nullable_to_non_nullable
+                        as String?,
             totalMatches:
                 null == totalMatches
                     ? _value.totalMatches
@@ -189,6 +207,8 @@ abstract class _$$TeamModelImplCopyWith<$Res>
     String? comunaId,
     FootballModality modality,
     int eloRating,
+    int leaguePoints,
+    String? leagueTier,
     int totalMatches,
     int wins,
     int losses,
@@ -219,6 +239,8 @@ class __$$TeamModelImplCopyWithImpl<$Res>
     Object? comunaId = freezed,
     Object? modality = null,
     Object? eloRating = null,
+    Object? leaguePoints = null,
+    Object? leagueTier = freezed,
     Object? totalMatches = null,
     Object? wins = null,
     Object? losses = null,
@@ -267,6 +289,16 @@ class __$$TeamModelImplCopyWithImpl<$Res>
                 ? _value.eloRating
                 : eloRating // ignore: cast_nullable_to_non_nullable
                     as int,
+        leaguePoints:
+            null == leaguePoints
+                ? _value.leaguePoints
+                : leaguePoints // ignore: cast_nullable_to_non_nullable
+                    as int,
+        leagueTier:
+            freezed == leagueTier
+                ? _value.leagueTier
+                : leagueTier // ignore: cast_nullable_to_non_nullable
+                    as String?,
         totalMatches:
             null == totalMatches
                 ? _value.totalMatches
@@ -309,6 +341,8 @@ class _$TeamModelImpl extends _TeamModel {
     this.comunaId,
     this.modality = FootballModality.futbolito,
     this.eloRating = 1200,
+    this.leaguePoints = 100,
+    this.leagueTier,
     this.totalMatches = 0,
     this.wins = 0,
     this.losses = 0,
@@ -339,6 +373,13 @@ class _$TeamModelImpl extends _TeamModel {
   @JsonKey()
   final int eloRating;
   // ✅ Coincidir con base de datos (no averageElo)
+  // Puntos de liga acumulados (ranking principal)
+  @override
+  @JsonKey()
+  final int leaguePoints;
+  // Tier/slug de la liga (pichanga, barrio, etc.)
+  @override
+  final String? leagueTier;
   @override
   @JsonKey()
   final int totalMatches;
@@ -356,7 +397,7 @@ class _$TeamModelImpl extends _TeamModel {
 
   @override
   String toString() {
-    return 'TeamModel(id: $id, name: $name, tag: $tag, captainId: $captainId, sectorId: $sectorId, comunaId: $comunaId, modality: $modality, eloRating: $eloRating, totalMatches: $totalMatches, wins: $wins, losses: $losses, draws: $draws, createdAt: $createdAt)';
+    return 'TeamModel(id: $id, name: $name, tag: $tag, captainId: $captainId, sectorId: $sectorId, comunaId: $comunaId, modality: $modality, eloRating: $eloRating, leaguePoints: $leaguePoints, leagueTier: $leagueTier, totalMatches: $totalMatches, wins: $wins, losses: $losses, draws: $draws, createdAt: $createdAt)';
   }
 
   @override
@@ -377,6 +418,10 @@ class _$TeamModelImpl extends _TeamModel {
                 other.modality == modality) &&
             (identical(other.eloRating, eloRating) ||
                 other.eloRating == eloRating) &&
+            (identical(other.leaguePoints, leaguePoints) ||
+                other.leaguePoints == leaguePoints) &&
+            (identical(other.leagueTier, leagueTier) ||
+                other.leagueTier == leagueTier) &&
             (identical(other.totalMatches, totalMatches) ||
                 other.totalMatches == totalMatches) &&
             (identical(other.wins, wins) || other.wins == wins) &&
@@ -398,6 +443,8 @@ class _$TeamModelImpl extends _TeamModel {
     comunaId,
     modality,
     eloRating,
+    leaguePoints,
+    leagueTier,
     totalMatches,
     wins,
     losses,
@@ -429,6 +476,8 @@ abstract class _TeamModel extends TeamModel {
     final String? comunaId,
     final FootballModality modality,
     final int eloRating,
+    final int leaguePoints,
+    final String? leagueTier,
     final int totalMatches,
     final int wins,
     final int losses,
@@ -456,6 +505,11 @@ abstract class _TeamModel extends TeamModel {
   FootballModality get modality;
   @override
   int get eloRating; // ✅ Coincidir con base de datos (no averageElo)
+  // Puntos de liga acumulados (ranking principal)
+  @override
+  int get leaguePoints; // Tier/slug de la liga (pichanga, barrio, etc.)
+  @override
+  String? get leagueTier;
   @override
   int get totalMatches;
   @override

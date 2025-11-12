@@ -88,7 +88,7 @@ final pendingTeamInvitationsProvider = StreamProvider<List<TeamInvitationView>>(
     final controller = StreamController<List<TeamInvitationView>>.broadcast();
     // Dedupe por firma (id:status); no necesitamos guardar la lista anterior
     String? lastSig;
-    String _signature(List<TeamInvitationView> list) {
+    String signature(List<TeamInvitationView> list) {
       final items =
           list.map((v) => '${v.invitation.id}:${v.invitation.status}').toList()
             ..sort();
@@ -103,7 +103,7 @@ final pendingTeamInvitationsProvider = StreamProvider<List<TeamInvitationView>>(
         if (computing) return;
         computing = true;
         final value = await fetchInvites();
-        final sig = _signature(value);
+        final sig = signature(value);
         if (sig != lastSig) {
           lastSig = sig;
           controller.add(value);

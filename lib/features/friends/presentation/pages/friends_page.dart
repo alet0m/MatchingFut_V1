@@ -41,7 +41,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
       }
     });
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: const Text(
           'Amigos',
@@ -62,7 +62,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
           labelColor: Theme.of(context).colorScheme.onPrimary,
           unselectedLabelColor: Theme.of(
             context,
-          ).colorScheme.onPrimary.withOpacity(0.7),
+          ).colorScheme.onPrimary.withValues(alpha: 0.7),
           indicatorColor: Theme.of(context).colorScheme.secondary,
           tabs: [
             const Tab(text: 'Mis Amigos', icon: Icon(Icons.people)),
@@ -88,24 +88,30 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
     return friendsAsync.when(
       data: (friends) {
         if (friends.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.people_outline, size: 80, color: Colors.grey),
-                SizedBox(height: 16),
+                Icon(
+                  Icons.people_outline,
+                  size: 80,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+                const SizedBox(height: 16),
                 Text(
                   'No tienes amigos aún',
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Busca y agrega a tus amigos futboleros',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -141,11 +147,13 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
           radius: 25,
           backgroundColor: Theme.of(context).colorScheme.primary,
           backgroundImage:
-              friend.profileImageUrl != null
+              (friend.profileImageUrl != null &&
+                      friend.profileImageUrl!.isNotEmpty)
                   ? NetworkImage(friend.profileImageUrl!)
                   : null,
           child:
-              friend.profileImageUrl == null
+              (friend.profileImageUrl == null ||
+                      friend.profileImageUrl!.isEmpty)
                   ? Text(
                     friend.fullName.substring(0, 1).toUpperCase(),
                     style: TextStyle(
@@ -183,13 +191,18 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'remove',
                   child: ListTile(
-                    leading: Icon(Icons.person_remove, color: Colors.red),
+                    leading: Icon(
+                      Icons.person_remove,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     title: Text(
                       'Eliminar amigo',
-                      style: TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                     ),
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -371,7 +384,10 @@ class _FriendsPageState extends ConsumerState<FriendsPage>
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Theme.of(context).colorScheme.onError,
+                ),
                 child: const Text('Eliminar'),
               ),
             ],

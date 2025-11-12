@@ -71,11 +71,12 @@ class _CreateRecruitmentPostPageState
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nueva Publicación'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         actions: [
           TextButton(
             onPressed: _isLoading ? null : _savePost,
@@ -141,7 +142,7 @@ class _CreateRecruitmentPostPageState
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _savePost,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E7D32),
+                    backgroundColor: scheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -207,7 +208,7 @@ class _CreateRecruitmentPostPageState
                 _postType = value!;
               });
             },
-            activeColor: const Color(0xFF2E7D32),
+            activeColor: Theme.of(context).colorScheme.primary,
           ),
           const Divider(height: 1),
           RadioListTile<String>(
@@ -220,7 +221,7 @@ class _CreateRecruitmentPostPageState
                 _postType = value!;
               });
             },
-            activeColor: const Color(0xFF2E7D32),
+            activeColor: Theme.of(context).colorScheme.primary,
           ),
         ],
       ),
@@ -552,9 +553,9 @@ class _CreateRecruitmentPostPageState
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Publicación creada exitosamente'),
-            backgroundColor: Color(0xFF2E7D32),
+          SnackBar(
+            content: const Text('Publicación creada exitosamente'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
           ),
         );
         Navigator.pop(context);
@@ -564,7 +565,7 @@ class _CreateRecruitmentPostPageState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al crear publicación: $error'),
-            backgroundColor: Colors.red,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

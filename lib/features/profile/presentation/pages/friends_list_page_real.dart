@@ -171,10 +171,12 @@ class _FriendsListPageRealState extends ConsumerState<FriendsListPageReal> {
             CircleAvatar(
               radius: 25,
               backgroundImage:
-                  friendImage != null ? NetworkImage(friendImage) : null,
+                  (friendImage != null && (friendImage as String).isNotEmpty)
+                      ? NetworkImage(friendImage)
+                      : null,
               backgroundColor: Colors.grey[300],
               child:
-                  friendImage == null
+                  (friendImage == null || (friendImage as String).isEmpty)
                       ? const Icon(Icons.person, size: 25, color: Colors.grey)
                       : null,
             ),
@@ -268,9 +270,11 @@ class _FriendsListPageRealState extends ConsumerState<FriendsListPageReal> {
                   ),
                   child: ClipOval(
                     child:
-                        friend['profile_image_url'] != null
+                        (friend['profile_image_url'] != null &&
+                                (friend['profile_image_url'] as String)
+                                    .isNotEmpty)
                             ? Image.network(
-                              friend['profile_image_url']!,
+                              friend['profile_image_url'],
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,

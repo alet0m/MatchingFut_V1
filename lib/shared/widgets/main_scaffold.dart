@@ -30,7 +30,7 @@ class MainScaffold extends StatelessWidget {
     } else if (currentLocation.startsWith('/notifications')) {
       title = 'Notificaciones';
     } else if (currentLocation.startsWith('/maps')) {
-      title = 'Territorio';
+      title = 'Ranking';
     } else if (currentLocation.startsWith('/profile')) {
       title = 'Perfil';
     } else if (currentLocation.startsWith('/recruitment')) {
@@ -78,7 +78,7 @@ class MainScaffold extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [scheme.primary, scheme.primary.withOpacity(0.85)],
+            colors: [scheme.primary, scheme.primary.withValues(alpha: 0.85)],
           ),
         ),
         child: ListView(
@@ -307,7 +307,7 @@ class MainScaffold extends StatelessWidget {
         color: scheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -340,9 +340,9 @@ class MainScaffold extends StatelessWidget {
             label: 'Equipos',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map_outlined, size: 28),
-            activeIcon: Icon(Icons.map, size: 28),
-            label: 'Territorio',
+            icon: Icon(Icons.emoji_events_outlined, size: 28),
+            activeIcon: Icon(Icons.emoji_events, size: 28),
+            label: 'Ranking',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline, size: 28),

@@ -18,6 +18,10 @@ class TeamModel with _$TeamModel {
     @Default(FootballModality.futbolito) FootballModality modality,
     @Default(1200)
     int eloRating, // ✅ Coincidir con base de datos (no averageElo)
+    // Puntos de liga acumulados (ranking principal)
+    @Default(100) int leaguePoints,
+    // Tier/slug de la liga (pichanga, barrio, etc.)
+    String? leagueTier,
     @Default(0) int totalMatches,
     @Default(0) int wins,
     @Default(0) int losses,

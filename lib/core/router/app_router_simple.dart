@@ -11,7 +11,6 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/friends/presentation/pages/friends_page.dart';
 import '../../features/friends/presentation/pages/search_friends_page.dart';
 import '../../features/matches/presentation/pages/matches_page_enhanced.dart';
-import '../../features/matches/presentation/pages/simple_match_selector.dart';
 import '../../features/matches/presentation/pages/live_match_page.dart';
 import '../../features/matches/presentation/pages/radial_match_search_page.dart';
 import '../../features/matches/presentation/pages/create_public_match_page.dart';
@@ -34,6 +33,8 @@ import '../../shared/widgets/main_scaffold.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../debug/health_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/public_matches/presentation/pages/explore_public_matches_page.dart';
+import '../../features/public_matches/presentation/pages/public_match_detail_page.dart';
 
 // Refresca el router cuando cambia el estado de autenticación (web necesita esto)
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -138,7 +139,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'create',
-                builder: (context, state) => const SimpleMatchTypeSelector(),
+                builder: (context, state) => const CreatePublicMatchPage(),
               ),
               GoRoute(
                 path: ':matchId',
@@ -198,10 +199,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             },
           ),
 
-          // Crear partido directo
+          // Crear partido (unificado a público)
           GoRoute(
             path: '/create-match',
-            builder: (context, state) => const CreateMatchPageEnhanced(),
+            builder: (context, state) => const CreatePublicMatchPage(),
           ),
           // Crear partido público
           GoRoute(
@@ -263,6 +264,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/settings',
             builder: (context, state) => const SettingsPage(),
           ),
+
+          // Explorar partidos públicos (feed)
+          GoRoute(
+            path: '/explore',
+            builder: (context, state) => const ExplorePublicMatchesPage(),
+          ),
         ],
       ),
 
@@ -290,6 +297,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final id = state.pathParameters['matchId']!;
           return LiveMatchPage(matchId: id);
+        },
+      ),
+      GoRoute(
+        path: '/public-match/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return PublicMatchDetailPage(id: id);
         },
       ),
     ],

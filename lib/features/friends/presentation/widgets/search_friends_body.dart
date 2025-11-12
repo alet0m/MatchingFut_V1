@@ -48,11 +48,15 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
         decoration: InputDecoration(
           hintText: 'Buscar por nombre o nickname...',
           hintStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onPrimary.withValues(alpha: 0.7),
           ),
           prefixIcon: Icon(
             Icons.search,
-            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onPrimary.withValues(alpha: 0.7),
           ),
           suffixIcon:
               _searchController.text.isNotEmpty
@@ -61,7 +65,7 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
                       Icons.clear,
                       color: Theme.of(
                         context,
-                      ).colorScheme.onPrimary.withOpacity(0.7),
+                      ).colorScheme.onPrimary.withValues(alpha: 0.7),
                     ),
                     onPressed: () {
                       _searchController.clear();
@@ -70,7 +74,9 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
                   )
                   : null,
           filled: true,
-          fillColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.1),
+          fillColor: Theme.of(
+            context,
+          ).colorScheme.onPrimary.withValues(alpha: 0.1),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(25),
             borderSide: BorderSide.none,
@@ -96,24 +102,30 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
 
   Widget _buildSearchResults() {
     if (_searchQuery.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
+            Icon(
+              Icons.people_outline,
+              size: 80,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            const SizedBox(height: 16),
             Text(
               'Busca amigos futboleros',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Escribe el nombre o nickname de la persona que buscas',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -130,20 +142,26 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off, size: 80, color: Colors.grey),
+            Icon(
+              Icons.search_off,
+              size: 80,
+              color: Theme.of(context).colorScheme.outline,
+            ),
             const SizedBox(height: 16),
             Text(
               'No se encontraron usuarios',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'No hay usuarios que coincidan con "$_searchQuery"',
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -172,11 +190,11 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
           radius: 25,
           backgroundColor: Theme.of(context).colorScheme.primary,
           backgroundImage:
-              user.profileImageUrl != null
+              (user.profileImageUrl != null && user.profileImageUrl!.isNotEmpty)
                   ? NetworkImage(user.profileImageUrl!)
                   : null,
           child:
-              user.profileImageUrl == null
+              (user.profileImageUrl == null || user.profileImageUrl!.isEmpty)
                   ? Text(
                     user.fullName.substring(0, 1).toUpperCase(),
                     style: TextStyle(
@@ -197,7 +215,9 @@ class _SearchFriendsBodyState extends ConsumerState<SearchFriendsBody> {
             if ((user.nickname ?? '').isNotEmpty)
               Text(
                 '@${user.nickname}',
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
           ],
         ),
